@@ -329,18 +329,24 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         state.sprites[0].hit_box.y = state.sprites[0].position.1;
     }
 
-  let colliding_sprite:i32 = player_contacts(&state.sprites);
-  if colliding_sprite > -1 {
+    let colliding_sprite:i32 = player_contacts(&state.sprites);
+    if colliding_sprite > -1 {
+        state.level = 5;
+    }
 
-      state.sprites.remove(colliding_sprite as usize);
-      state.level = 5;
-  }
+    let length = state.sprites.len();
+    let mut counter: i32 = (length - 1) as i32;
+    while counter >= 0 {
+        if state.sprites[counter as usize].exploded_counter > 10{
+            state.sprites.remove(counter as usize);   
+        } 
+        counter = counter - 1;
+        
+
+    }
 
 
-    // if player_contacts(&state.sprites){
-    //     println!("{}", "Died?");
-    //     state.level = 5
-    // }
+ 
 
 }
 

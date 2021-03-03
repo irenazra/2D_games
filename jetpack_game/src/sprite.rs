@@ -2,15 +2,17 @@ use crate::texture::Texture;
 use crate::types::{Rect, Vec2i};
 use crate::animation::Animation;
 use std::rc::Rc;
+use std::path::Path;
 
 pub struct Sprite {
-    image: Rc<Texture>,
+    pub image: Rc<Texture>,
     pub animation:Animation,
     pub position: Vec2i,
     pub vy: f32,
     pub hit_box: Rect,
     pub frame_pos: usize,
-    pub exploded: bool
+    pub exploded: bool,
+    pub exploded_counter: usize,
 }
 
 impl Sprite {
@@ -28,6 +30,7 @@ impl Sprite {
             }, 
             frame_pos: 0,
             exploded: exploded,
+            exploded_counter:0,
         }
     }
 
@@ -48,14 +51,26 @@ impl Sprite {
 }
 
 pub trait DrawSpriteExt {
-    fn draw_sprite(&mut self, s: &Sprite);
+    fn draw_sprite(&mut self, s: &mut Sprite);
+
 }
 
 use crate::screen::Screen;
 impl<'fb> DrawSpriteExt for Screen<'fb> {
-    fn draw_sprite(&mut self, s: &Sprite) {
+    fn draw_sprite(&mut self, s: &mut Sprite) {
         // This works because we're only using a public method of Screen here,
         // and the private fields of sprite are visible inside this module
+        if s.exploded {
+            s.exploded_counter = s.exploded_counter + 1;
+            if s.image.width == 48 {
+                s.image =  Rc::new(Texture::with_file(Path::new("content/big_explosion.png"))); 
+            } else {
+                s.image = Rc::new(Texture::with_file(Path::new("content/small_explosion.png"))); 
+            }
+             
+        } 
         self.bitblt(&s.image, s.animation.frames[(s.frame_pos)], s.position);
+        
     }
+
 }
