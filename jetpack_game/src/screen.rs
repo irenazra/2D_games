@@ -109,11 +109,14 @@ impl<'fb> Screen<'fb> {
     }
     // Bitblt too begins with a translation
     pub fn bitblt(&mut self, src:&Texture, from: Rect, Vec2i(to_x, to_y): Vec2i) {
+
+
+
         let (tw,th) = src.size();
         assert!(0 <= from.x);
         assert!(from.x < tw as i32);
-        assert!(0 <= from.y);
-        assert!(from.y < th as i32);
+        assert!(0 <= from.y); 
+        assert!(from.y < th as i32); 
         let to_x = to_x - self.position.0;
         let to_y = to_y - self.position.1;
         if (to_x + from.w as i32) < 0

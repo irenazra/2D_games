@@ -2,7 +2,7 @@
 
 ## Main Current Focus
 JD: Shooting 3 Lasers (:))
-Iren: Animation set up (Monday) (try the llama at piskel)
+Iren: 
 
 
 ## To Do
@@ -10,11 +10,11 @@ Iren: Animation set up (Monday) (try the llama at piskel)
 - Scrolling should not end (until you finish the level) 
 - Create multiple levels (3) 
 - Be able to save which level you were at (text file)
-- Animation set up
-- Llama animation (some art)
-- Estanblish dimensions of the game (currently 128x128) (llama is 42x42)
+- [DONE] Animation set up
+- [DONE] Llama animation (some art)
+- [DONE] Estanblish dimensions of the game (currently 128x128) (llama is 42x42)
 - Make the meteors more interesting
-- Add more tiles 
+- [DONE] Add more tiles 
 - Fix the hit boxes (should not feel awkward)
 - "You finished the level screen", get a break between levels, when you hit play pause a little bit 
 - Missiles, lasers

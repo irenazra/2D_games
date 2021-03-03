@@ -47,8 +47,8 @@ struct GameState {
 // seconds per frame
 const DT: f64 = 1.0 / 60.0;
 
-const WIDTH: usize = 128;
-const HEIGHT: usize = 128;
+const WIDTH: usize = 240;
+const HEIGHT: usize = 240;
 const DEPTH: usize = 4;
 
 
@@ -70,7 +70,9 @@ fn main() {
         let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
         Pixels::new(WIDTH as u32, HEIGHT as u32, surface_texture).unwrap()
     };
-    let king = Rc::new(Texture::with_file(Path::new("content/king.png")));
+    let llama = Rc::new(Texture::with_file(Path::new("content/llama.png")));
+    //let king = Rc::new(Texture::with_file(Path::new("content/king.png")));
+
     let asteroid = Rc::new(Texture::with_file(Path::new("content/asteroid.png")));  
     let menu_1 = Rc::new(Texture::with_file(Path::new("content/screens/play.png")));
     let menu_2 = Rc::new(Texture::with_file(Path::new("content/screens/load.png")));
@@ -78,21 +80,48 @@ fn main() {
     let mut state = GameState {
         // initial game state...
         sprites: vec![Sprite::new(
-            &king,
+            //&king,
+            &llama,
             Animation::new(vec![Rect {
+
                 x: 0,
-                y: 16,
-                w: 16,
-                h: 16,
+                y: 0,
+                w: 48,
+                h: 48,
+            },  
+            Rect {
+                x: 0,
+                y: 48,
+                w: 48,
+                h: 48,
             },           
               Rect {
-                x: 16,
-                y: 16,
-                w: 16,
-                h: 16,
+                x: 0,
+                y: 96,
+                w: 48,
+                h: 48,
+            },
+            Rect {
+                x: 0,
+                y: 144,
+                w: 48,
+                h: 48,
+            },
+            Rect {
+                x: 0,
+                y: 192,
+                w: 48,
+                h: 48,
+            },
+            Rect {
+                x: 0,
+                y: 240,
+                w: 48,
+                h: 48,
             }]),
             Vec2i(10, 50),
         ),
+
         Sprite::new(
             &asteroid,
             Animation::new(vec![Rect {
@@ -108,20 +137,24 @@ fn main() {
         level: 0,
         current_tex: 0
     };
-    let tex = Rc::new(Texture::with_file(Path::new("content/tileset.png")));
+    let tex = Rc::new(Texture::with_file(Path::new("content/space_tileset.png")));
     let tileset = Rc::new(Tileset::new(
         vec![
             Tile { solid: false },
-            Tile { solid: true },
-            Tile { solid: true },
-            Tile { solid: true },
+            Tile { solid: false },
+            Tile { solid: false },
+            Tile { solid: false },
+            Tile { solid: false },
+            Tile { solid: false },
+            Tile { solid: false },
+            Tile { solid: false },
         ],
         &tex,
     ));
     let maps = vec![
         Tilemap::new(
             Vec2i(0, 0),
-            (64, 8),
+            (64, 6),
             &tileset,
             make_map(),
         )  
@@ -159,7 +192,7 @@ fn main() {
                 for map in maps.iter(){
                     map.draw(&mut screen);
                 }
-                draw_game(&state, &mut screen);
+                draw_game(&mut state, &mut screen, frame_count);
             }
 
             // Flip buffers
@@ -200,8 +233,12 @@ fn main() {
     });
 }
 
-fn draw_game(state: &GameState, screen: &mut Screen) {
-        for s in state.sprites.iter() {
+fn draw_game(state: &mut GameState, screen: &mut Screen, frame_number: usize) {
+
+    for s in state.sprites.iter_mut() {
+        if frame_number%7 == 0 {
+            s.update_frame_pos();
+        }
         screen.draw_sprite(s);
     }
 
@@ -210,7 +247,9 @@ fn draw_game(state: &GameState, screen: &mut Screen) {
 fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     // Player control goes here
 
-    if input.key_held(VirtualKeyCode::Up) && !(state.sprites[0].position.1 > 96) 
+    let bottom_border = 165;
+
+    if input.key_held(VirtualKeyCode::Up) && !(state.sprites[0].position.1 > bottom_border) 
     && !(state.sprites[0].position.1 < 0)  {
         if state.sprites[0].vy > 0.0{
             state.sprites[0].vy /=3.0;
@@ -220,9 +259,9 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         if state.sprites[0].position.1 <= 0 {
             state.sprites[0].position.1 = 0;
         }
-        if state.sprites[0].position.1 >= 96  {
+        if state.sprites[0].position.1 >= bottom_border {
             state.sprites[0].vy = 0.0;
-            state.sprites[0].position.1 = 96;
+            state.sprites[0].position.1 = bottom_border;
         } else {
             state.sprites[0].vy +=0.1;
         }
@@ -270,8 +309,8 @@ fn make_map()->Vec<usize>{
     // 3 & 2 make the "sky" 
     // 0 & 1 make the floor
     let mut rng = rand::thread_rng();
-    let mut sky: Vec<usize> =   (0..448).map(|_| (rng.gen_range(0, 2) as usize)).collect();
-    let mut floor:  Vec<usize> =   (0..64).map(|_| (rng.gen_range(2, 4) as usize)).collect();
+    let mut sky: Vec<usize> =   (0..256).map(|_| (rng.gen_range(0, 4) as usize)).collect();
+    let mut floor:  Vec<usize> =   (0..128).map(|_| (rng.gen_range(4, 8) as usize)).collect();
     sky.append(&mut floor);
     sky
 }

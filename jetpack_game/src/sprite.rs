@@ -28,6 +28,19 @@ impl Sprite {
             frame_pos: 0
         }
     }
+
+    //This rotates between sprites and creates a continous motion, independent of the where the
+    //character is moving
+    pub fn update_frame_pos(&mut self)  {
+        let length = self.animation.frames.len();
+        let mut next_sprite:usize = self.frame_pos + 1;
+
+        if next_sprite == length{
+            next_sprite = 0;
+        }
+
+        self.frame_pos= next_sprite;
+    }
 }
 
 pub trait DrawSpriteExt {

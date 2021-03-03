@@ -2,7 +2,7 @@ use crate::texture::Texture;
 use std::rc::Rc;
 use crate::types::*;
 use crate::screen::Screen;
-pub const TILE_SZ: u16 = 16;
+pub const TILE_SZ: u16 = 48;
 
 /// A graphical tile, we'll implement Copy since it's tiny
 #[derive(Clone,Copy)]
@@ -41,9 +41,12 @@ impl Tileset {
     }
     /// Get the frame rect for a tile ID
     fn get_rect(&self, id: TileID) -> Rect {
+
         let idx = id.0;
         let (w, _h) = self.texture.size();
+
         let tw = w / TILE_SZ as usize;
+
         let row = idx / tw;
         let col = idx - (row * tw);
         Rect {
