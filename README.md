@@ -2,7 +2,7 @@
 
 ## Main Current Focus
 JD: Shooting 3 Lasers (:))
-Iren: 
+Iren: Make meteors more interesting (I am planning to swap them with an explosion images)
 
 
 ## To Do
@@ -18,7 +18,7 @@ Iren:
 - Fix the hit boxes (should not feel awkward)
 - "You finished the level screen", get a break between levels, when you hit play pause a little bit 
 - Missiles, lasers
-- Destructible asteroids (make them a difference color and put cracks on them, set their positions to a value that is not on the screen) (THESE ARE DIFFERENT ASTROIDS) try to get a breaking animation
+- [IN PROGRESS : Currently we can detect what the player is colliding with and we can remove it from the screen. We can potentially add an explosion image to its place.] Destructible asteroids (make them a difference color and put cracks on them, set their positions to a value that is not on the screen) (THESE ARE DIFFERENT ASTROIDS) try to get a breaking animation
 
 
 - Maybe random elements? random meteors?
