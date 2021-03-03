@@ -9,11 +9,12 @@ pub struct Sprite {
     pub position: Vec2i,
     pub vy: f32,
     pub hit_box: Rect,
-    pub frame_pos: usize
+    pub frame_pos: usize,
+    pub exploded: bool
 }
 
 impl Sprite {
-    pub fn new(image: &Rc<Texture>, animation: Animation, position: Vec2i) -> Self {
+    pub fn new(image: &Rc<Texture>, animation: Animation, position: Vec2i, exploded:bool) -> Self {
         Self {
             image: Rc::clone(image),
             animation,
@@ -25,7 +26,8 @@ impl Sprite {
                 w: image.width as u16,
                 h: image.height as u16
             }, 
-            frame_pos: 0
+            frame_pos: 0,
+            exploded: exploded,
         }
     }
 
@@ -41,6 +43,8 @@ impl Sprite {
 
         self.frame_pos= next_sprite;
     }
+
+
 }
 
 pub trait DrawSpriteExt {

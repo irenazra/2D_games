@@ -73,7 +73,12 @@ fn main() {
     let llama = Rc::new(Texture::with_file(Path::new("content/llama.png")));
     //let king = Rc::new(Texture::with_file(Path::new("content/king.png")));
 
-    let asteroid = Rc::new(Texture::with_file(Path::new("content/asteroid.png")));  
+    let asteroid = Rc::new(Texture::with_file(Path::new("content/asteroid.png")));
+    let bigger_asteroid = Rc::new(Texture::with_file(Path::new("content/bigger_asteroid.png"))); 
+    let saturn =  Rc::new(Texture::with_file(Path::new("content/saturn.png"))); 
+    let bigger_explosion=  Rc::new(Texture::with_file(Path::new("content/big_explosion.png"))); 
+    let small_explosion=  Rc::new(Texture::with_file(Path::new("content/small_explosion.png"))); 
+
     let menu_1 = Rc::new(Texture::with_file(Path::new("content/screens/play.png")));
     let menu_2 = Rc::new(Texture::with_file(Path::new("content/screens/load.png")));
     let game_over = Rc::new(Texture::with_file(Path::new("content/screens/game_over.png")));
@@ -120,6 +125,7 @@ fn main() {
                 h: 48,
             }]),
             Vec2i(10, 50),
+            false,
         ),
 
         Sprite::new(
@@ -131,6 +137,51 @@ fn main() {
                 h: 16,
             }]),
             Vec2i(300, 50),
+            false,
+        ),
+        Sprite::new(
+            &saturn,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 32,
+                h: 32,
+            }]),
+            Vec2i(300, 60),
+            false,
+        ),
+        Sprite::new(
+            &bigger_explosion,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 48,
+                h: 48,
+            }]),
+            Vec2i(100, 30),
+            false,
+        ),
+        Sprite::new(
+            &small_explosion,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 32,
+                h: 32,
+            }]),
+            Vec2i(200, 30),
+            false,
+        ),
+        Sprite::new(
+            &bigger_asteroid,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 48,
+                h: 48,
+            }]),
+            Vec2i(250, 50),
+            false,
         )],
         textures: vec![menu_1,menu_2, game_over],
         scroll: Vec2i(0,0),
@@ -277,9 +328,19 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         state.sprites[0].hit_box.x = state.sprites[0].position.0;
         state.sprites[0].hit_box.y = state.sprites[0].position.1;
     }
-    if player_contacts(&state.sprites){
-        state.level = 5
-    }
+
+  let colliding_sprite:i32 = player_contacts(&state.sprites);
+  if colliding_sprite > -1 {
+
+      state.sprites.remove(colliding_sprite as usize);
+      state.level = 5;
+  }
+
+
+    // if player_contacts(&state.sprites){
+    //     println!("{}", "Died?");
+    //     state.level = 5
+    // }
 
 }
 

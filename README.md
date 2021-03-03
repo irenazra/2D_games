@@ -36,8 +36,8 @@ Iren:
 A game like jetpack. We will have a person trying to escape from the corona virus.
 
 Extra features: 
-- Scrolling
-- AI entities
+- Scrolling 
+
 
 ## Game 2
 
