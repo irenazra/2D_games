@@ -18,8 +18,7 @@ Iren: Set up hit boxes
 - Fix the hit boxes (should not feel awkward)
 - "You finished the level screen", get a break between levels, when you hit play pause a little bit 
 - Missiles, lasers
-- [IN PROGRESS : Currently we can detect what the player is colliding with and we can remove it from the screen. We can potentially add an explosion image to its place.] Destructible asteroids (make them a difference color and put cracks on them, set their positions to a value that is not on the screen) (THESE ARE DIFFERENT ASTROIDS) try to get a breaking animation
-
+- [DONE] : Destructible asteroids (Currently we can detect "explode" a sprite, print an explosion in its place, and then remove the explosion)
 
 - Maybe random elements? random meteors?
 - Add laser soubnd
