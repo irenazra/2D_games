@@ -2,7 +2,7 @@
 
 ## Main Current Focus
 JD: Shooting 3 Lasers (:))
-Iren: Make meteors more interesting (I am planning to swap them with an explosion images)
+Iren: Set up hit boxes
 
 
 ## To Do
