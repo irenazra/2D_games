@@ -13,10 +13,11 @@ pub struct Sprite {
     pub frame_pos: usize,
     pub exploded: bool,
     pub exploded_counter: usize,
+    pub is_obstacle: bool,
 }
 
 impl Sprite {
-    pub fn new(image: &Rc<Texture>, animation: Animation, position: Vec2i, exploded:bool) -> Self {
+    pub fn new(image: &Rc<Texture>, animation: Animation, position: Vec2i, exploded:bool, is_obstacle: bool) -> Self {
         Self {
             image: Rc::clone(image),
             animation,
@@ -31,6 +32,7 @@ impl Sprite {
             frame_pos: 0,
             exploded: exploded,
             exploded_counter:0,
+            is_obstacle
         }
     }
 

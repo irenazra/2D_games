@@ -43,6 +43,9 @@ struct GameState {
     scroll: Vec2i,
     level: u16,
     current_tex : usize,
+    shots_left: i32,
+    shot_cool_down: i32,
+    shot_index: usize,
 }
 // seconds per frame
 const DT: f64 = 1.0 / 60.0;
@@ -78,6 +81,8 @@ fn main() {
     let saturn =  Rc::new(Texture::with_file(Path::new("content/saturn.png"))); 
     let bigger_explosion=  Rc::new(Texture::with_file(Path::new("content/big_explosion.png"))); 
     let small_explosion=  Rc::new(Texture::with_file(Path::new("content/small_explosion.png"))); 
+    let laser =  Rc::new(Texture::with_file(Path::new("content/laser.png")));
+    let battery = Rc::new(Texture::with_file(Path::new("content/battery.png")));
 
     let menu_1 = Rc::new(Texture::with_file(Path::new("content/screens/play.png")));
     let menu_2 = Rc::new(Texture::with_file(Path::new("content/screens/load.png")));
@@ -100,7 +105,7 @@ fn main() {
                 w: 48,
                 h: 48,
             },           
-              Rect {
+            Rect {
                 x: 0,
                 y: 96,
                 w: 48,
@@ -126,8 +131,74 @@ fn main() {
             }]),
             Vec2i(10, 50),
             false,
+            false,
         ),
-
+        Sprite::new( // Laser 1
+            &laser,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 20,
+                h: 10,
+            }]),
+            Vec2i(300, -20),
+            false,
+            false,
+        ),
+        Sprite::new( // Laser 2
+            &laser,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 20,
+                h: 10,
+            }]),
+            Vec2i(300, -20),
+            false,
+            false,
+        ),
+        Sprite::new( // Laser 3
+            &laser,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 20,
+                h: 10,
+            }]),
+            Vec2i(300, -20),
+            false,
+            false,
+        ),
+        Sprite::new(
+            &battery,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 15,
+                h: 20,
+            },  
+            Rect {
+                x: 15,
+                 y: 0,
+                 w: 15,
+                 h: 20,
+            },           
+            Rect {
+                x: 30,
+                y: 0,
+                w: 15,
+                h: 20,
+            },
+            Rect {
+                x: 45,
+                y: 0,
+                w: 15,
+                h: 20,
+            }]),
+            Vec2i(220, 10),
+            false,
+            false,
+        ),
         Sprite::new(
             &asteroid,
             Animation::new(vec![Rect {
@@ -138,6 +209,7 @@ fn main() {
             }]),
             Vec2i(300, 50),
             false,
+            true,
         ),
         Sprite::new(
             &saturn,
@@ -149,6 +221,7 @@ fn main() {
             }]),
             Vec2i(300, 60),
             false,
+            true,
         ),
         Sprite::new(
             &bigger_explosion,
@@ -159,6 +232,7 @@ fn main() {
                 h: 48,
             }]),
             Vec2i(100, 30),
+            false,
             false,
         ),
         Sprite::new(
@@ -171,6 +245,7 @@ fn main() {
             }]),
             Vec2i(200, 30),
             false,
+            true,
         ),
         Sprite::new(
             &bigger_asteroid,
@@ -182,11 +257,15 @@ fn main() {
             }]),
             Vec2i(250, 50),
             false,
+            true
         )],
         textures: vec![menu_1,menu_2, game_over],
         scroll: Vec2i(0,0),
         level: 0,
-        current_tex: 0
+        current_tex: 0,
+        shots_left: 3,
+        shot_cool_down: 0,
+        shot_index:0
     };
     let tex = Rc::new(Texture::with_file(Path::new("content/space_tileset.png")));
     let tileset = Rc::new(Tileset::new(
@@ -230,15 +309,15 @@ fn main() {
                 screen.bitblt(&state.textures[state.current_tex],  // TODO: JUST MAKE A FUNCTION TO PROVIDE THE TEXTURE
                     Rect{ x: 0,
                     y: 0,
-                    w: 128,
-                    h: 128}, Vec2i(0, 0));
+                    w: 240,
+                    h: 240}, Vec2i(0, 0));
             } else if state.level == 5 {
                 state.scroll = Vec2i(0,0);
                 screen.bitblt(&state.textures[2],  // TODO: JUST MAKE A FUNCTION TO PROVIDE THE TEXTURE
                     Rect{ x: 0,
                     y: 0,
-                    w: 128,
-                    h: 128}, Vec2i(0, 0));
+                    w: 240,
+                    h: 240}, Vec2i(0, 0));
             } else {
                 for map in maps.iter(){
                     map.draw(&mut screen);
@@ -286,8 +365,8 @@ fn main() {
 
 fn draw_game(state: &mut GameState, screen: &mut Screen, frame_number: usize) {
 
-    for s in state.sprites.iter_mut() {
-        if frame_number%7 == 0 {
+    for (i, s ) in state.sprites.iter_mut().enumerate() {
+        if frame_number%6 == 0 && i != 4 { // battery does not need to be updated every time
             s.update_frame_pos();
         }
         screen.draw_sprite(s);
@@ -317,16 +396,41 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
             state.sprites[0].vy +=0.1;
         }
     }
+
+    if input.key_pressed(VirtualKeyCode::Space) && state.shot_cool_down == 0 {
+        handle_shot(state);
+    }
+
+    // Scroll & Movement
     if state.level == 1 || state.level == 2 || state.level == 3 {
         // Scroll camera
-        state.scroll = Vec2i(state.scroll.0 +1 , state.scroll.1);
+        state.scroll = Vec2i(state.scroll.0 +2 , state.scroll.1);
 
         // Move Sprite  
-        state.sprites[0].position.0 += 1;
+        state.sprites[0].position.0 += 2;
         state.sprites[0].position.1 += state.sprites[0].vy.min(2.0) as i32; // minimum set to have a "max speed"
         // Move Hitbox
         state.sprites[0].hit_box.x = state.sprites[0].position.0;
         state.sprites[0].hit_box.y = state.sprites[0].position.1;
+
+        // Move lasers
+        for i in 1..4{
+            state.sprites[i].position.0 += 4;
+            state.sprites[i].hit_box.x = state.sprites[1].position.0;
+            // Move laser out of screen so it doesn't collide with obstacles that haven't loaded yet
+            // Once out of the screen update our shot
+            if state.sprites[i].position.0 == (state.scroll.0 + 240) {
+                state.sprites[i].position.1 = -20;
+                if state.shots_left < 3 {
+                    state.shots_left += 1;
+                    state.sprites[4].frame_pos -= 1;   
+                }
+            }
+        }
+        
+        // Move battery
+        state.sprites[4].position.0 += 2;
+        state.shot_cool_down  = (state.shot_cool_down - 1).max(0);
     }
 
     let colliding_sprite:i32 = player_contacts(&state.sprites);
@@ -365,7 +469,7 @@ fn update_menu(state: &mut GameState, input: &WinitInputHelper){
         state.current_tex += 1;
         state.current_tex %= 2;
     }
-    if input.key_pressed(VirtualKeyCode::Return){
+    if input.key_pressed(VirtualKeyCode::Return) {
         state.level = 1;
     }
 }
@@ -380,4 +484,19 @@ fn make_map()->Vec<usize>{
     let mut floor:  Vec<usize> =   (0..128).map(|_| (rng.gen_range(4, 8) as usize)).collect();
     sky.append(&mut floor);
     sky
+}
+
+fn handle_shot(state: &mut GameState) {
+    // If we have a shot, shoot 
+    if state.shots_left > 0 {
+        state.sprites[4].update_frame_pos(); // Update battery
+        let i = (state.shot_index % 3) +1  ;
+        state.sprites[i].position = state.sprites[0].position;
+        state.sprites[i].position.0 += 30;
+        state.sprites[i].position.1 += 20;
+        state.sprites[i].hit_box.y = state.sprites[1].position.1;
+        state.shots_left -= 1;
+        state.shot_cool_down = 20;
+        state.shot_index = state.shot_index +1;
+    }
 }

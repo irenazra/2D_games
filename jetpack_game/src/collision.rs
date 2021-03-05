@@ -5,7 +5,7 @@ pub fn player_contacts(sprites: &Vec<Sprite>) -> i32 {
     // collide mobiles against mobiles
    let length = sprites.len();
     for x in 1..length {
-        if rect_displacement(sprites[0].hit_box.clone(), sprites[x].hit_box.clone()){
+        if rect_displacement(sprites[0].hit_box.clone(), sprites[x].hit_box.clone()) && sprites[x].is_obstacle {
             return x as i32;
         } 
     
