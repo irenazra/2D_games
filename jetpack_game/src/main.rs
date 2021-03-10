@@ -1,5 +1,6 @@
 use pixels::{Pixels, SurfaceTexture};
 use std::path::Path;
+use std::{thread, time};
 use std::rc::Rc;
 use std::time::Instant;
 use winit::dpi::LogicalSize;
@@ -77,12 +78,10 @@ fn main() {
     //let king = Rc::new(Texture::with_file(Path::new("content/king.png")));
 
     let asteroid = Rc::new(Texture::with_file(Path::new("content/asteroid.png")));
-    let bigger_asteroid = Rc::new(Texture::with_file(Path::new("content/bigger_asteroid.png"))); 
-    let saturn =  Rc::new(Texture::with_file(Path::new("content/saturn.png"))); 
-    let bigger_explosion=  Rc::new(Texture::with_file(Path::new("content/big_explosion.png"))); 
-    let small_explosion=  Rc::new(Texture::with_file(Path::new("content/small_explosion.png"))); 
+    let break_asteroid = Rc::new(Texture::with_file(Path::new("content/b_asteroid.png")));  
     let laser =  Rc::new(Texture::with_file(Path::new("content/laser.png")));
     let battery = Rc::new(Texture::with_file(Path::new("content/battery.png")));
+    let ship = Rc::new(Texture::with_file(Path::new("content/ship.png")));
 
     let menu_1 = Rc::new(Texture::with_file(Path::new("content/screens/play.png")));
     let menu_2 = Rc::new(Texture::with_file(Path::new("content/screens/load.png")));
@@ -90,7 +89,6 @@ fn main() {
     let mut state = GameState {
         // initial game state...
         sprites: vec![Sprite::new(
-            //&king,
             &llama,
             Animation::new(vec![Rect {
 
@@ -130,6 +128,17 @@ fn main() {
                 h: 48,
             }]),
             Vec2i(10, 50),
+            vec![Rect{
+                x: 4,
+                y: 30,
+                w: 25,
+                h: 15,
+            }, Rect{
+                x: 14,
+                y: 14,
+                w: 14,
+                h: 31, 
+            }],
             false,
             false,
         ),
@@ -142,6 +151,12 @@ fn main() {
                 h: 10,
             }]),
             Vec2i(300, -20),
+            vec![Rect {
+                x: 0,
+                y: 0,
+                w: 20,
+                h: 10,
+            }],
             false,
             false,
         ),
@@ -154,6 +169,12 @@ fn main() {
                 h: 10,
             }]),
             Vec2i(300, -20),
+            vec![Rect {
+                x: 0,
+                y: 0,
+                w: 20,
+                h: 10,
+            }],
             false,
             false,
         ),
@@ -166,6 +187,12 @@ fn main() {
                 h: 10,
             }]),
             Vec2i(300, -20),
+            vec![Rect {
+                x: 0,
+                y: 0,
+                w: 20,
+                h: 10,
+            }],
             false,
             false,
         ),
@@ -196,6 +223,7 @@ fn main() {
                 h: 20,
             }]),
             Vec2i(220, 10),
+            vec![],
             false,
             false,
         ),
@@ -204,58 +232,57 @@ fn main() {
             Animation::new(vec![Rect {
                 x: 0,
                 y: 0,
-                w: 16,
-                h: 16,
+                w: 32,
+                h: 32,
             }]),
-            Vec2i(300, 50),
+            Vec2i(400, 50),
+            vec![Rect{
+                x:2,
+                y:4,
+                w:28,
+                h:19,
+            }, Rect{
+                x:7,
+                y:2,
+                w:19,
+                h:25,
+            }],
             false,
             true,
         ),
         Sprite::new(
-            &saturn,
+            &ship,
+            Animation::new(vec![Rect {
+                x: 0,
+                y: 0,
+                w: 200,
+                h: 200,
+            }]),
+            Vec2i(600, 50),
+            vec![],
+            false,
+            false,
+        ),
+        Sprite::new(
+            &break_asteroid,
             Animation::new(vec![Rect {
                 x: 0,
                 y: 0,
                 w: 32,
                 h: 32,
-            }]),
-            Vec2i(300, 60),
-            false,
-            true,
-        ),
-        Sprite::new(
-            &bigger_explosion,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 48,
-                h: 48,
-            }]),
-            Vec2i(100, 30),
-            false,
-            false,
-        ),
-        Sprite::new(
-            &small_explosion,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 32,
-                h: 32,
-            }]),
-            Vec2i(200, 30),
-            false,
-            true,
-        ),
-        Sprite::new(
-            &bigger_asteroid,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 48,
-                h: 48,
             }]),
             Vec2i(250, 50),
+            vec![Rect{
+                x: 1,
+                y: 11,
+                w:29,
+                h: 12
+            }, Rect{
+                x: 10,
+                y: 8,
+                w: 20,
+                h: 17
+            }],
             false,
             true
         )],
@@ -408,15 +435,20 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
 
         // Move Sprite  
         state.sprites[0].position.0 += 2;
-        state.sprites[0].position.1 += state.sprites[0].vy.min(2.0) as i32; // minimum set to have a "max speed"
+        state.sprites[0].position.1 += state.sprites[0].vy.min(2.0) as i32;
+        let y_pos = state.sprites[0].position.1;
         // Move Hitbox
-        state.sprites[0].hit_box.x = state.sprites[0].position.0;
-        state.sprites[0].hit_box.y = state.sprites[0].position.1;
+        for hit_box in &mut state.sprites[0].hit_boxes {
+            hit_box.x += 2;
+            hit_box.y = y_pos;
+        }
 
         // Move lasers
         for i in 1..4{
             state.sprites[i].position.0 += 4;
-            state.sprites[i].hit_box.x = state.sprites[1].position.0;
+            for hit_box in &mut state.sprites[i].hit_boxes{
+                hit_box.x += 4;
+            }
             // Move laser out of screen so it doesn't collide with obstacles that haven't loaded yet
             // Once out of the screen update our shot
             if state.sprites[i].position.0 == (state.scroll.0 + 240) {
@@ -433,8 +465,9 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         state.shot_cool_down  = (state.shot_cool_down - 1).max(0);
     }
 
-    let colliding_sprite:i32 = player_contacts(&state.sprites);
+    let colliding_sprite = player_contacts(&state.sprites);
     if colliding_sprite > -1 {
+        thread::sleep(time::Duration::from_millis(500));
         state.level = 5;
     }
 
@@ -494,7 +527,12 @@ fn handle_shot(state: &mut GameState) {
         state.sprites[i].position = state.sprites[0].position;
         state.sprites[i].position.0 += 30;
         state.sprites[i].position.1 += 20;
-        state.sprites[i].hit_box.y = state.sprites[1].position.1;
+        let x_pos = state.sprites[i].position.0;
+        let y_pos = state.sprites[i].position.1;
+        for hit_box in &mut state.sprites[i].hit_boxes{
+            hit_box.x = x_pos;
+            hit_box.y = y_pos;
+        }
         state.shots_left -= 1;
         state.shot_cool_down = 20;
         state.shot_index = state.shot_index +1;

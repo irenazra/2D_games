@@ -9,7 +9,7 @@ pub struct Sprite {
     pub animation:Animation,
     pub position: Vec2i,
     pub vy: f32,
-    pub hit_box: Rect,
+    pub hit_boxes: Vec<Rect>,
     pub frame_pos: usize,
     pub exploded: bool,
     pub exploded_counter: usize,
@@ -17,18 +17,17 @@ pub struct Sprite {
 }
 
 impl Sprite {
-    pub fn new(image: &Rc<Texture>, animation: Animation, position: Vec2i, exploded:bool, is_obstacle: bool) -> Self {
+    pub fn new(image: &Rc<Texture>, animation: Animation, Vec2i(x,y) : Vec2i, mut hit_boxes: Vec<Rect>, exploded:bool, is_obstacle: bool) -> Self {
+        for mut rect in &mut hit_boxes{
+            rect.x += x;
+            rect.y += y;
+        }
         Self {
             image: Rc::clone(image),
             animation,
-            position,
+            position: Vec2i(x,y),
             vy: 0.0,
-            hit_box: Rect {
-                x: position.0,
-                y: position.1,
-                w: image.width as u16,
-                h: image.height as u16
-            }, 
+            hit_boxes, 
             frame_pos: 0,
             exploded: exploded,
             exploded_counter:0,
