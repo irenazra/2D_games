@@ -6,24 +6,32 @@ pub fn player_contacts(sprites: &Vec<Sprite>) -> i32 {
     for i in 4..sprites.len() {
         for hit_box in &sprites[i].hit_boxes{
             if rect_displacement(sprites[0].hit_boxes[0].clone(), hit_box.clone()) && sprites[i].is_obstacle {
-                return x as i32;
+                return i as i32;
             } else if rect_displacement(sprites[0].hit_boxes[1].clone(), hit_box.clone()) && sprites[i].is_obstacle {
-                return x as i32;
+                return i as i32;
             } 
         }
     }
     return -1 as i32;
 }
 
-pub fn laser_contacts(sprites: &Vec<Sprite>){
+pub fn laser_contacts(sprites: &mut Vec<Sprite>){
+    let mut contacts:Vec<(usize,usize)> = vec![];
     for laser in 1..4{
         for i in 4..sprites.len(){
             for hit_box in &sprites[i].hit_boxes{
                 if rect_displacement(sprites[laser].hit_boxes[0].clone(), hit_box.clone()) && sprites[i].is_obstacle {
-                    return x as i32;
+                    contacts.push((laser, i));
                 }
             }
         }
+    }
+    for (laser, i) in contacts{
+        sprites[laser].position.1 = -20;
+        if sprites[i].is_explodable{
+            sprites[i].exploded = true;
+            sprites[i].is_obstacle = false;
+        } 
     }
 }
 

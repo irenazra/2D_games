@@ -12,12 +12,12 @@ pub struct Sprite {
     pub hit_boxes: Vec<Rect>,
     pub frame_pos: usize,
     pub exploded: bool,
-    pub exploded_counter: usize,
+    pub is_explodable: bool,
     pub is_obstacle: bool,
 }
 
 impl Sprite {
-    pub fn new(image: &Rc<Texture>, animation: Animation, Vec2i(x,y) : Vec2i, mut hit_boxes: Vec<Rect>, exploded:bool, is_obstacle: bool) -> Self {
+    pub fn new(image: &Rc<Texture>, animation: Animation, Vec2i(x,y) : Vec2i, mut hit_boxes: Vec<Rect>, exploded:bool, is_explodable:bool, is_obstacle: bool) -> Self {
         for mut rect in &mut hit_boxes{
             rect.x += x;
             rect.y += y;
@@ -30,7 +30,7 @@ impl Sprite {
             hit_boxes, 
             frame_pos: 0,
             exploded: exploded,
-            exploded_counter:0,
+            is_explodable,
             is_obstacle
         }
     }
@@ -61,15 +61,15 @@ impl<'fb> DrawSpriteExt for Screen<'fb> {
     fn draw_sprite(&mut self, s: &mut Sprite) {
         // This works because we're only using a public method of Screen here,
         // and the private fields of sprite are visible inside this module
-        if s.exploded {
-            s.exploded_counter = s.exploded_counter + 1;
-            if s.image.width == 48 {
-                s.image =  Rc::new(Texture::with_file(Path::new("content/big_explosion.png"))); 
-            } else {
-                s.image = Rc::new(Texture::with_file(Path::new("content/small_explosion.png"))); 
-            }
+        // if s.exploded {
+        //     s.exploded_counter = s.exploded_counter + 1;
+        //     if s.image.width == 48 {
+        //         s.image =  Rc::new(Texture::with_file(Path::new("content/big_explosion.png"))); 
+        //     } else {
+        //         s.image = Rc::new(Texture::with_file(Path::new("content/small_explosion.png"))); 
+        //     }
              
-        } 
+        // } 
         self.bitblt(&s.image, s.animation.frames[(s.frame_pos)], s.position);
         
     }

@@ -141,6 +141,7 @@ fn main() {
             }],
             false,
             false,
+            false,
         ),
         Sprite::new( // Laser 1
             &laser,
@@ -157,6 +158,7 @@ fn main() {
                 w: 20,
                 h: 10,
             }],
+            false,
             false,
             false,
         ),
@@ -177,6 +179,7 @@ fn main() {
             }],
             false,
             false,
+            false
         ),
         Sprite::new( // Laser 3
             &laser,
@@ -195,6 +198,7 @@ fn main() {
             }],
             false,
             false,
+            false
         ),
         Sprite::new(
             &battery,
@@ -226,6 +230,7 @@ fn main() {
             vec![],
             false,
             false,
+            false,
         ),
         Sprite::new(
             &asteroid,
@@ -248,6 +253,7 @@ fn main() {
                 h:25,
             }],
             false,
+            false,
             true,
         ),
         Sprite::new(
@@ -260,6 +266,7 @@ fn main() {
             }]),
             Vec2i(600, 50),
             vec![],
+            false,
             false,
             false,
         ),
@@ -284,7 +291,8 @@ fn main() {
                 h: 17
             }],
             false,
-            true
+            true,
+            true,
         )],
         textures: vec![menu_1,menu_2, game_over],
         scroll: Vec2i(0,0),
@@ -464,23 +472,22 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         state.sprites[4].position.0 += 2;
         state.shot_cool_down  = (state.shot_cool_down - 1).max(0);
     }
-
+    
+    laser_contacts(&mut state.sprites);
     let colliding_sprite = player_contacts(&state.sprites);
     if colliding_sprite > -1 {
         thread::sleep(time::Duration::from_millis(500));
         state.level = 5;
     }
 
-    let length = state.sprites.len();
-    let mut counter: i32 = (length - 1) as i32;
-    while counter >= 0 {
-        if state.sprites[counter as usize].exploded_counter > 10{
-            state.sprites.remove(counter as usize);   
-        } 
-        counter = counter - 1;
-        
-
-    }
+    // let length = state.sprites.len();
+    // let mut counter: i32 = (length - 1) as i32;
+    // while counter >= 0 {
+    //     if state.sprites[counter as usize].exploded_counter > 10{
+    //         state.sprites.remove(counter as usize);   
+    //     } 
+    //     counter = counter - 1;
+    // }
 
 
  
