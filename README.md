@@ -1,7 +1,7 @@
 # Corona_jetpack_game
 
 ## Main Current Focus
-JD: Shooting 3 Lasers (:))
+JD: Save level progress on a file
 Iren: Set up hit boxes
 
 
@@ -12,12 +12,12 @@ Iren: Set up hit boxes
 - Be able to save which level you were at (text file)
 - [DONE] Animation set up
 - [DONE] Llama animation (some art)
-- [DONE] Estanblish dimensions of the game (currently 128x128) (llama is 42x42)
+- [DONE] Estanblish dimensions of the game (currently 240x240) (llama is 42x42)
 - Make the meteors more interesting
 - [DONE] Add more tiles 
 - Fix the hit boxes (should not feel awkward)
 - "You finished the level screen", get a break between levels, when you hit play pause a little bit 
-- Missiles, lasers
+- [DONE] Missiles, lasers
 - [DONE] : Destructible asteroids (Currently we can detect "explode" a sprite, print an explosion in its place, and then remove the explosion)
 
 - Maybe random elements? random meteors?
