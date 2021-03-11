@@ -10,7 +10,6 @@ pub struct Sprite {
     pub position: Vec2i,
     pub vy: f32,
     pub hit_boxes: Vec<Rect>,
-    pub frame_pos: usize,
     pub exploded: bool,
     pub is_explodable: bool,
     pub is_obstacle: bool,
@@ -28,25 +27,24 @@ impl Sprite {
             position: Vec2i(x,y),
             vy: 0.0,
             hit_boxes, 
-            frame_pos: 0,
             exploded: exploded,
             is_explodable,
             is_obstacle
         }
     }
 
-    //This rotates between sprites and creates a continous motion, independent of the where the
-    //character is moving
-    pub fn update_frame_pos(&mut self)  {
-        let length = self.animation.frames.len();
-        let mut next_sprite:usize = self.frame_pos + 1;
+    // //This rotates between sprites and creates a continous motion, independent of the where the
+    // //character is moving
+    // pub fn update_frame_pos(&mut self)  {
+    //     let length = self.animation.frames.len();
+    //     let mut next_sprite:usize = self.frame_pos + 1;
 
-        if next_sprite == length{
-            next_sprite = 0;
-        }
+    //     if next_sprite == length{
+    //         next_sprite = 0;
+    //     }
 
-        self.frame_pos= next_sprite;
-    }
+    //     self.frame_pos= next_sprite;
+    // }
 
 
 }
@@ -70,7 +68,7 @@ impl<'fb> DrawSpriteExt for Screen<'fb> {
         //     }
              
         // } 
-        self.bitblt(&s.image, s.animation.frames[(s.frame_pos)], s.position);
+        self.bitblt(&s.image, s.animation.states[s.animation.index].frames[s.animation.states[s.animation.index].current_index], s.position);
         
     }
 

@@ -26,7 +26,7 @@ mod texture;
 use texture::Texture;
 // Animation will define our animation datatypes and blending or whatever
 mod animation;
-use animation::Animation;
+use animation::*;
 // Sprite will define our movable sprites
 mod sprite;
 // Lazy glob import, see the extension trait business later for why
@@ -47,6 +47,7 @@ struct GameState {
     shots_left: i32,
     shot_cool_down: i32,
     shot_index: usize,
+    frame: usize,
 }
 // seconds per frame
 const DT: f64 = 1.0 / 60.0;
@@ -90,42 +91,44 @@ fn main() {
         // initial game state...
         sprites: vec![Sprite::new(
             &llama,
-            Animation::new(vec![Rect {
-
-                x: 0,
-                y: 0,
-                w: 48,
-                h: 48,
-            },  
-            Rect {
-                x: 0,
-                y: 48,
-                w: 48,
-                h: 48,
-            },           
-            Rect {
-                x: 0,
-                y: 96,
-                w: 48,
-                h: 48,
-            },
-            Rect {
-                x: 0,
-                y: 144,
-                w: 48,
-                h: 48,
-            },
-            Rect {
-                x: 0,
-                y: 192,
-                w: 48,
-                h: 48,
-            },
-            Rect {
-                x: 0,
-                y: 240,
-                w: 48,
-                h: 48,
+            Animation::new(vec![ AnimationState {
+                frames: vec![Rect {
+                    x: 0,
+                    y: 0,
+                    w: 48,
+                    h: 48,
+                }, Rect {
+                    x: 0,
+                    y: 48,
+                    w: 48,
+                    h: 48,
+                }, Rect {
+                    x: 0,
+                    y: 96,
+                    w: 48,
+                    h: 48,
+                },
+                Rect {
+                    x: 0,
+                    y: 144,
+                    w: 48,
+                    h: 48,
+                },
+                Rect {
+                    x: 0,
+                    y: 192,
+                    w: 48,
+                    h: 48,
+                },
+                Rect {
+                    x: 0,
+                    y: 240,
+                    w: 48,
+                    h: 48,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: true,
             }]),
             Vec2i(10, 50),
             vec![Rect{
@@ -145,11 +148,17 @@ fn main() {
         ),
         Sprite::new( // Laser 1
             &laser,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 20,
-                h: 10,
+            Animation::new(vec![ AnimationState{
+                frames: vec![   
+                    Rect {
+                    x: 0,
+                    y: 0,
+                    w: 20,
+                    h: 10,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             }]),
             Vec2i(300, -20),
             vec![Rect {
@@ -164,11 +173,17 @@ fn main() {
         ),
         Sprite::new( // Laser 2
             &laser,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 20,
-                h: 10,
+            Animation::new(vec![ AnimationState{
+                frames: vec![   
+                    Rect {
+                    x: 0,
+                    y: 0,
+                    w: 20,
+                    h: 10,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             }]),
             Vec2i(300, -20),
             vec![Rect {
@@ -179,15 +194,21 @@ fn main() {
             }],
             false,
             false,
-            false
+            false,
         ),
         Sprite::new( // Laser 3
             &laser,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 20,
-                h: 10,
+            Animation::new(vec![ AnimationState{
+                frames: vec![   
+                    Rect {
+                    x: 0,
+                    y: 0,
+                    w: 20,
+                    h: 10,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             }]),
             Vec2i(300, -20),
             vec![Rect {
@@ -198,33 +219,53 @@ fn main() {
             }],
             false,
             false,
-            false
+            false,
         ),
         Sprite::new(
             &battery,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 15,
-                h: 20,
-            },  
-            Rect {
-                x: 15,
-                 y: 0,
-                 w: 15,
-                 h: 20,
-            },           
-            Rect {
-                x: 30,
-                y: 0,
-                w: 15,
-                h: 20,
+            Animation::new(vec![AnimationState {
+                frames: vec![Rect {
+                    x: 0,
+                    y: 0,
+                    w: 15,
+                    h: 20,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
+            } , 
+            AnimationState {
+                frames: vec![Rect {
+                    x: 15,
+                     y: 0,
+                     w: 15,
+                     h: 20,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             },
-            Rect {
-                x: 45,
-                y: 0,
-                w: 15,
-                h: 20,
+            AnimationState {
+                frames: vec![Rect {
+                    x: 30,
+                    y: 0,
+                    w: 15,
+                    h: 20,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
+            },
+            AnimationState {
+                frames: vec![Rect {
+                    x: 45,
+                    y: 0,
+                    w: 15,
+                    h: 20,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             }]),
             Vec2i(220, 10),
             vec![],
@@ -234,12 +275,18 @@ fn main() {
         ),
         Sprite::new(
             &asteroid,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 32,
-                h: 32,
-            }]),
+            Animation::new(vec![
+                AnimationState{
+                    frames: vec![Rect {
+                        x: 0,
+                        y: 0,
+                        w: 32,
+                        h: 32,
+                    }],
+                    current_index: 0,
+                    start_time: 0,
+                    repeat: false,
+                }]),
             Vec2i(400, 50),
             vec![Rect{
                 x:2,
@@ -258,11 +305,16 @@ fn main() {
         ),
         Sprite::new(
             &ship,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 200,
-                h: 200,
+            Animation::new(vec![ AnimationState{
+                frames: vec![Rect {
+                    x: 0,
+                    y: 0,
+                    w: 200,
+                    h: 200,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             }]),
             Vec2i(600, 50),
             vec![],
@@ -272,11 +324,18 @@ fn main() {
         ),
         Sprite::new(
             &break_asteroid,
-            Animation::new(vec![Rect {
-                x: 0,
-                y: 0,
-                w: 32,
-                h: 32,
+            Animation::new(vec![ AnimationState{
+                frames: vec![
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        w: 32,
+                        h: 32,
+                    }
+                ],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             }]),
             Vec2i(250, 50),
             vec![Rect{
@@ -300,7 +359,8 @@ fn main() {
         current_tex: 0,
         shots_left: 3,
         shot_cool_down: 0,
-        shot_index:0
+        shot_index:0,
+        frame: 0
     };
     let tex = Rc::new(Texture::with_file(Path::new("content/space_tileset.png")));
     let tileset = Rc::new(Tileset::new(
@@ -346,6 +406,7 @@ fn main() {
                     y: 0,
                     w: 240,
                     h: 240}, Vec2i(0, 0));
+
             } else if state.level == 5 {
                 state.scroll = Vec2i(0,0);
                 screen.bitblt(&state.textures[2],  // TODO: JUST MAKE A FUNCTION TO PROVIDE THE TEXTURE
@@ -390,6 +451,7 @@ fn main() {
             update_game(&mut state, &input, frame_count);
             // Increment the frame counter
             frame_count += 1;
+            state.frame = frame_count;
         }
         // Request redraw
         window.request_redraw();
@@ -400,10 +462,8 @@ fn main() {
 
 fn draw_game(state: &mut GameState, screen: &mut Screen, frame_number: usize) {
 
-    for (i, s ) in state.sprites.iter_mut().enumerate() {
-        if frame_number%6 == 0 && i != 4 { // battery does not need to be updated every time
-            s.update_frame_pos();
-        }
+    for s in state.sprites.iter_mut() {
+        s.animate(frame_number);
         screen.draw_sprite(s);
     }
 
@@ -463,7 +523,7 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
                 state.sprites[i].position.1 = -20;
                 if state.shots_left < 3 {
                     state.shots_left += 1;
-                    state.sprites[4].frame_pos -= 1;   
+                    state.sprites[4].animation.index -= 1;   
                 }
             }
         }
@@ -511,6 +571,9 @@ fn update_menu(state: &mut GameState, input: &WinitInputHelper){
     }
     if input.key_pressed(VirtualKeyCode::Return) {
         state.level = 1;
+        for s in state.sprites.iter_mut() {
+            s.animation.set_state(0, state.frame )
+        } 
     }
 }
 
@@ -529,7 +592,7 @@ fn make_map()->Vec<usize>{
 fn handle_shot(state: &mut GameState) {
     // If we have a shot, shoot 
     if state.shots_left > 0 {
-        state.sprites[4].update_frame_pos(); // Update battery
+        state.sprites[4].animation.index += 1 ; // Update battery
         let i = (state.shot_index % 3) +1  ;
         state.sprites[i].position = state.sprites[0].position;
         state.sprites[i].position.0 += 30;
