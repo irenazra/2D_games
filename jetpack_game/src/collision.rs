@@ -1,5 +1,6 @@
 use crate::types::Rect;
 use crate::sprite::Sprite;
+use crate::animation::StartAnim;
 
 pub fn player_contacts(sprites: &Vec<Sprite>) -> i32 {
     // collide player against objects
@@ -15,7 +16,7 @@ pub fn player_contacts(sprites: &Vec<Sprite>) -> i32 {
     return -1 as i32;
 }
 
-pub fn laser_contacts(sprites: &mut Vec<Sprite>){
+pub fn laser_contacts(sprites: &mut Vec<Sprite>, frame: usize){
     let mut contacts:Vec<(usize,usize)> = vec![];
     for laser in 1..4{
         for i in 4..sprites.len(){
@@ -31,6 +32,7 @@ pub fn laser_contacts(sprites: &mut Vec<Sprite>){
         if sprites[i].is_explodable{
             sprites[i].exploded = true;
             sprites[i].is_obstacle = false;
+            sprites[i].animation.set_state(1, frame);
         } 
     }
 }

@@ -129,6 +129,22 @@ fn main() {
                 current_index: 0,
                 start_time: 0,
                 repeat: true,
+            }, 
+            AnimationState {
+                frames: vec![Rect {
+                    x: 0,
+                    y: 288,
+                    w: 48,
+                    h: 48,
+                }, Rect {
+                    x: 0,
+                    y: 336,
+                    w: 48,
+                    h: 48,
+                }],
+                current_index: 0,
+                start_time: 0,
+                repeat: true,
             }]),
             Vec2i(10, 50),
             vec![Rect{
@@ -336,6 +352,18 @@ fn main() {
                 current_index: 0,
                 start_time: 0,
                 repeat: false,
+            }, AnimationState{
+                frames: vec![
+                    Rect {
+                        x: 32,
+                        y: 0,
+                        w: 32,
+                        h: 32,
+                    }
+                ],
+                current_index: 0,
+                start_time: 0,
+                repeat: false,
             }]),
             Vec2i(250, 50),
             vec![Rect{
@@ -462,8 +490,8 @@ fn main() {
 
 fn draw_game(state: &mut GameState, screen: &mut Screen, frame_number: usize) {
 
-    for s in state.sprites.iter_mut() {
-        s.animate(frame_number);
+    for s in state.sprites.iter_mut().rev() {
+        s.animate(frame_number); 
         screen.draw_sprite(s);
     }
 
@@ -473,7 +501,6 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     // Player control goes here
 
     let bottom_border = 165;
-
     if input.key_held(VirtualKeyCode::Up) && !(state.sprites[0].position.1 > bottom_border) 
     && !(state.sprites[0].position.1 < 0)  {
         if state.sprites[0].vy > 0.0{
@@ -491,6 +518,15 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
             state.sprites[0].vy +=0.1;
         }
     }
+    if state.sprites[0].position.1 >= bottom_border && state.sprites[0].animation.index != 0 {
+        state.sprites[0].animation.set_state(0, state.frame)
+    }
+    if state.sprites[0].position.1 < bottom_border && state.sprites[0].animation.index != 1 {
+        state.sprites[0].animation.set_state(1, state.frame)
+    }
+
+
+
 
     if input.key_pressed(VirtualKeyCode::Space) && state.shot_cool_down == 0 {
         handle_shot(state);
@@ -533,25 +569,12 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         state.shot_cool_down  = (state.shot_cool_down - 1).max(0);
     }
     
-    laser_contacts(&mut state.sprites);
+    laser_contacts(&mut state.sprites, state.frame);
     let colliding_sprite = player_contacts(&state.sprites);
     if colliding_sprite > -1 {
         thread::sleep(time::Duration::from_millis(500));
         state.level = 5;
     }
-
-    // let length = state.sprites.len();
-    // let mut counter: i32 = (length - 1) as i32;
-    // while counter >= 0 {
-    //     if state.sprites[counter as usize].exploded_counter > 10{
-    //         state.sprites.remove(counter as usize);   
-    //     } 
-    //     counter = counter - 1;
-    // }
-
-
- 
-
 }
 
 

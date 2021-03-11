@@ -3,7 +3,7 @@ use crate::types::AnimationState;
 pub struct Animation {
     pub states: Vec<AnimationState>,
     pub index: usize,
-
+    
     // Do this for the exercise today!
     // You'll want to know the frames involved and the timing for each frame
     // But then there's also dynamic data, which might live in this struct or might live somewhere else
