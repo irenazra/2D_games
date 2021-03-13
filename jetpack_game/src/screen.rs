@@ -10,24 +10,35 @@ pub struct Screen<'fb> {
 }
 impl<'fb> Screen<'fb> {
     // Call =wrap= every frame; that means the camera position will need to be stored in the game state
-    pub fn wrap(framebuffer: &'fb mut [u8], width: usize, height: usize, depth: usize, position:Vec2i) -> Self {
+    pub fn wrap(
+        framebuffer: &'fb mut [u8],
+        width: usize,
+        height: usize,
+        depth: usize,
+        position: Vec2i,
+    ) -> Self {
         Self {
             framebuffer,
             width,
             height,
             depth,
-            position
+            position,
         }
     }
     pub fn size(&self) -> (usize, usize) {
         (self.width, self.height)
     }
     pub fn bounds(&self) -> Rect {
-        Rect{x:self.position.0, y:self.position.1, w:self.width as u16, h:self.height as u16}
+        Rect {
+            x: self.position.0,
+            y: self.position.1,
+            w: self.width as u16,
+            h: self.height as u16,
+        }
     }
     // Our old, slow friend draw_at, now with super scrolling powers!
     #[inline(always)]
-    pub fn draw_at(&mut self, col: Rgba, Vec2i(x,y) : Vec2i) {
+    pub fn draw_at(&mut self, col: Rgba, Vec2i(x, y): Vec2i) {
         let x = x - self.position.0;
         let y = y - self.position.1;
         // The rest is about the same
@@ -38,9 +49,9 @@ impl<'fb> Screen<'fb> {
         // Now x and y are within framebuffer bounds so go ahead and draw
         let c = [col.0, col.1, col.2, col.3];
         let idx = y * self.width as i32 * self.depth as i32 + x * self.depth as i32;
-        assert!(idx>=0);
+        assert!(idx >= 0);
         let idx = idx as usize;
-        self.framebuffer[idx..(idx+self.depth)].copy_from_slice(&c);
+        self.framebuffer[idx..(idx + self.depth)].copy_from_slice(&c);
     }
     // Clear's the same...
     pub fn clear(&mut self, col: Rgba) {
@@ -53,7 +64,11 @@ impl<'fb> Screen<'fb> {
     pub fn rect(&mut self, r: Rect, col: Rgba) {
         let c = [col.0, col.1, col.2, col.3];
         // Here's the translation
-        let r = Rect{x:r.x-self.position.0, y:r.y-self.position.1, ..r};
+        let r = Rect {
+            x: r.x - self.position.0,
+            y: r.y - self.position.1,
+            ..r
+        };
         // And the rest is just the same
         let x0 = r.x.max(0).min(self.width as i32) as usize;
         let x1 = (r.x + r.w as i32).max(0).min(self.width as i32) as usize;
@@ -108,15 +123,12 @@ impl<'fb> Screen<'fb> {
         }
     }
     // Bitblt too begins with a translation
-    pub fn bitblt(&mut self, src:&Texture, from: Rect, Vec2i(to_x, to_y): Vec2i) {
-
-
-
-        let (tw,th) = src.size();
+    pub fn bitblt(&mut self, src: &Texture, from: Rect, Vec2i(to_x, to_y): Vec2i) {
+        let (tw, th) = src.size();
         assert!(0 <= from.x);
         assert!(from.x < tw as i32);
-        assert!(0 <= from.y); 
-        assert!(from.y < th as i32); 
+        assert!(0 <= from.y);
+        assert!(from.y < th as i32);
         let to_x = to_x - self.position.0;
         let to_y = to_y - self.position.1;
         if (to_x + from.w as i32) < 0
@@ -138,10 +150,12 @@ impl<'fb> Screen<'fb> {
         let y_count = (to_y + from.h as i32).min(self.height as i32) - to_y;
         let x_count = (to_x + from.w as i32).min(self.width as i32) - to_x;
         let src_buf = src.buffer();
-        for (row_a, row_b) in src_buf[(src_pitch * ((from.y + y_skip) as usize))..(src_pitch * ((from.y + y_count) as usize))]
+        for (row_a, row_b) in src_buf[(src_pitch * ((from.y + y_skip) as usize))
+            ..(src_pitch * ((from.y + y_count) as usize))]
             .chunks_exact(src_pitch)
             .zip(
-                self.framebuffer[(dst_pitch * ((to_y + y_skip) as usize))..(dst_pitch * ((to_y + y_count) as usize))]
+                self.framebuffer[(dst_pitch * ((to_y + y_skip) as usize))
+                    ..(dst_pitch * ((to_y + y_count) as usize))]
                     .chunks_exact_mut(dst_pitch),
             )
         {
