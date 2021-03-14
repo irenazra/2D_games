@@ -153,6 +153,7 @@ fn main() {
                 );
                 if input.key_held(VirtualKeyCode::Return){
                     state.level = 0;
+                    state.shots_left = 3;
                 }
             } else if state.next_level {
                 update_level(&mut state, &input);
