@@ -26,7 +26,7 @@ pub fn laser_contacts(sprites: &mut Vec<Sprite>, frame: usize) {
         for i in 4..sprites.len() {
             for hit_box in &sprites[i].hit_boxes {
                 if rect_displacement(sprites[laser].hit_boxes[0].clone(), hit_box.clone())
-                    && sprites[i].is_obstacle
+                && sprites[i].is_obstacle
                 {
                     contacts.push((laser, i));
                 }
@@ -34,7 +34,9 @@ pub fn laser_contacts(sprites: &mut Vec<Sprite>, frame: usize) {
         }
     }
     for (laser, i) in contacts {
-        sprites[laser].position.1 = -20;
+        sprites[laser].position.1 = -200;
+        sprites[laser].hit_boxes[0].y = -20;
+        sprites[laser].hit_boxes[0].x = -20;
         if sprites[i].is_explodable {
             sprites[i].exploded = true;
             sprites[i].is_obstacle = false;

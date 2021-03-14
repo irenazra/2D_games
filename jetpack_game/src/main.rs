@@ -151,6 +151,9 @@ fn main() {
                     },
                     Vec2i(0, 0),
                 );
+                if input.key_held(VirtualKeyCode::Return){
+                    state.level = 0;
+                }
             } else if state.next_level {
                 update_level(&mut state, &input);
                 state.scroll = Vec2i(0, 0);
@@ -199,7 +202,7 @@ fn main() {
             // Eat up one frame worth of time
             available_time -= DT;
             if !state.next_level && (state.level == 1 || state.level == 2 || state.level == 3) {
-                update_game(&mut state, &input, frame_count);
+                update_game(&mut state, &input);
                 // Increment the frame counter
                 frame_count += 1;
                 state.frame = frame_count;
@@ -219,7 +222,7 @@ fn draw_game(state: &mut GameState, screen: &mut Screen, frame_number: usize) {
     }
 }
 
-fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
+fn update_game(state: &mut GameState, input: &WinitInputHelper) {
     // Player control goes here
 
     let bottom_border = 165;
@@ -284,6 +287,8 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
             // Once out of the screen update our shot
             if state.sprites[i].position.0 == (state.scroll.0 + 240) {
                 state.sprites[i].position.1 = -20;
+                state.sprites[i].hit_boxes[0].y = -20;
+                state.sprites[i].hit_boxes[0].x = -20;
                 if state.shots_left < 3 {
                     state.shots_left += 1;
                     state.sprites[4].animation.index -= 1;
@@ -354,7 +359,7 @@ fn handle_shot(state: &mut GameState) {
 // Check if player has cleared the level
 #[allow(unused_must_use)]
 fn check_clear(state: &mut GameState) {
-    if state.sprites[0].position.0 >= 2700 {
+    if state.sprites[0].position.0 >= 2500 {
         thread::sleep(time::Duration::from_millis(1000));
         if state.level != 3 {
             let save = state.level.to_string();

@@ -1,4 +1,3 @@
-use crate::types::Rect;
 use image::{self, RgbaImage};
 use std::path::Path;
 
@@ -9,6 +8,7 @@ pub struct Texture {
     depth: usize,
 }
 
+#[allow(dead_code)]
 enum AlphaChannel {
     First,
     Last,
@@ -40,12 +40,12 @@ impl Texture {
     pub fn buffer(&self) -> &[u8] {
         &self.image
     }
-    pub fn valid_frame(&self, frame: Rect) -> bool {
-        0 <= frame.x
-            && (frame.x + frame.w as i32) <= (self.width as i32)
-            && 0 <= frame.y
-            && (frame.y + frame.h as i32) <= (self.height as i32)
-    }
+    // pub fn valid_frame(&self, frame: Rect) -> bool {
+    //     0 <= frame.x
+    //         && (frame.x + frame.w as i32) <= (self.width as i32)
+    //         && 0 <= frame.y
+    //         && (frame.y + frame.h as i32) <= (self.height as i32)
+    // }
 }
 
 fn premultiply(img: &mut [u8], depth: usize, alpha: AlphaChannel) {

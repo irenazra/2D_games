@@ -1,7 +1,6 @@
 use crate::animation::Animation;
 use crate::texture::Texture;
 use crate::types::{Rect, Vec2i};
-use std::path::Path;
 use std::rc::Rc;
 
 pub struct Sprite {
