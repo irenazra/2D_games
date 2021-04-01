@@ -127,7 +127,7 @@ impl Tilemap {
             self.dims.1
         );
 
-        return y as usize * self.dims.0 + x as usize
+        return y as usize * self.dims.0 + x as usize;
     }
 
     pub fn size(&self) -> (usize, usize) {

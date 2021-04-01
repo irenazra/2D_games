@@ -24,7 +24,7 @@ mod texture;
 use texture::Texture;
 // Animation will define our animation datatypes and blending or whatever
 mod animation;
-use animation::Animation;
+use animation::*;
 // Sprite will define our movable sprites
 mod sprite;
 // Lazy glob import, see the extension trait business later for why
@@ -35,6 +35,9 @@ use types::*;
 
 mod tile;
 use tile::*;
+
+mod level_maker;
+use level_maker::*;
 
 use crate::types::{Rect, Vec2i};
 
@@ -51,8 +54,8 @@ struct GameState {
 // seconds per frame
 const DT: f64 = 1.0 / 60.0;
 
-const WIDTH: usize = 240;
-const HEIGHT: usize = 240;
+const WIDTH: usize = 480;
+const HEIGHT: usize = 480;
 const DEPTH: usize = 4;
 
 fn main() {
@@ -78,84 +81,6 @@ fn main() {
 
     let mut tiles = Rc::new(Texture::with_file(Path::new("src/pixel_art/slug_tiles.png")));
 
-    //CREATING THE SLUG SPRITE
-    let mut slug_sprites = Rc::new(Texture::with_file(Path::new("src/pixel_art/slug.png")));
- 
-    let mut slug_animation = Animation::new(vec![Rect {
-        x: 0,
-        y: 0,
-        w: 48,
-        h: 48,
-    },   
-      Rect {
-        x: 48,
-        y: 0,
-        w: 48,
-        h: 48,
-    },           
-      Rect {
-        x: 0,
-        y: 48,
-        w: 48,
-        h: 48,
-    },
-    Rect {
-        x: 48,
-        y: 48,
-        w: 48,
-        h: 48,
-    }]);
-
-    let mut slug_position = Vec2i(10, 50);
-
-
-    let mut slug_sprite = Sprite::new(
-        &slug_sprites,
-        slug_animation,
-        slug_position,
-    );
-    
-    //CREATING THE ENEMY SPRITE
-    let mut enemy_sprites = Rc::new(Texture::with_file(Path::new("src/pixel_art/enemy.png")));
- 
-    let mut enemy_animation = Animation::new(vec![Rect {
-        x: 0,
-        y: 0,
-        w: 48,
-        h: 48,
-    },   
-      Rect {
-        x: 48,
-        y: 0,
-        w: 48,
-        h: 48,
-    },           
-      Rect {
-        x: 0,
-        y: 48,
-        w: 48,
-        h: 48,
-    },
-    Rect {
-        x: 48,
-        y: 48,
-        w: 48,
-        h: 48,
-    }]);
-
-    let mut enemy_position = Vec2i(100, 100);
-
-
-    let mut enemy_sprite = Sprite::new(
-        &enemy_sprites,
-        enemy_animation,
-        enemy_position,
-    );
-
-
-  
-
-
     //Create the tiles
     let first_tile = tile::Tile { solid: true };
     let second_tile = tile::Tile { solid: true };
@@ -169,8 +94,6 @@ fn main() {
     let mut second_ID = tile::TileID(1);
     let mut third_ID = tile::TileID(2);
     let mut fourth_ID = tile::TileID(3);
-
-    //let mut map = Vec::new();
 
     // for w in 0..WIDTH*4 {
     //     for h in 0..HEIGHT*4 {
@@ -186,17 +109,11 @@ fn main() {
     //     }
     // }
 
-    
-
-    let mut map = vec![1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1];
-
-    
-
-
+    let mut map = vec![1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,];
 
     let mut tile_map = tile::Tilemap::new(
         Vec2i(0,0),
-        ((5) ,(5)),
+        ((10) ,(10)),
         &tile_set,
         map,
     );
@@ -206,7 +123,7 @@ fn main() {
 
     let mut state = GameState {
         // initial game state...
-        sprites: vec![slug_sprite, enemy_sprite],
+        sprites: make_core(),
         tilemap: tile_map,
         covered_tiles: 0,
     };
@@ -277,9 +194,10 @@ fn draw_game(state: &mut GameState, screen: &mut Screen,frame_number:usize) {
     state.tilemap.draw(screen);
 
     for s in state.sprites.iter_mut() {
-        if frame_number%7 == 0 {
-            s.update_frame_pos();
-        }
+        // if frame_number%7 == 0 {
+        //     s.update_frame_pos();
+        // }
+        s.animate(frame_number);
         screen.draw_sprite(s);
     }
 
@@ -388,19 +306,31 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     // Player control goes here
     if input.key_held(VirtualKeyCode::Right) {
         state.sprites[0].position.0 += 2;
-        state.sprites[0].frame_pos = 2;
+        state.sprites[0].animation.set_state(2, frame);
     }
     if input.key_held(VirtualKeyCode::Left) {
         state.sprites[0].position.0 -= 2;
-        state.sprites[0].frame_pos = 0;
+        state.sprites[0].animation.set_state(1, frame);
     }
-    if input.key_held(VirtualKeyCode::Up) {
+
+    // Diagonal situations
+    if input.key_held(VirtualKeyCode::Up) && (input.key_held(VirtualKeyCode::Left) || input.key_held(VirtualKeyCode::Right)){
         state.sprites[0].position.1 -= 2;
-
+    } else if input.key_held(VirtualKeyCode::Up){ // Not diagonal
+        state.sprites[0].position.1 -= 2;
+        state.sprites[0].animation.set_state(0, frame);
     }
-    if input.key_held(VirtualKeyCode::Down) {
+    // Diagonal situations
+    if input.key_held(VirtualKeyCode::Down) && (input.key_held(VirtualKeyCode::Left) || input.key_held(VirtualKeyCode::Right)){
         state.sprites[0].position.1 += 2;
+    } else if input.key_held(VirtualKeyCode::Down){ // Not diagonal
+        state.sprites[0].position.1 += 2;
+        state.sprites[0].animation.set_state(0, frame);
+    }
 
+    // Go back to back and forth motion
+    if input.key_released(VirtualKeyCode::Right) ||  input.key_released(VirtualKeyCode::Left){
+        state.sprites[0].animation.set_state(0, frame);
     }
 
     //ENEMY CONTROL
@@ -420,11 +350,14 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     //if random == 0 {
 
     if x_distance > 0 {
-            enemy_pos_x += 1
+            enemy_pos_x += 1;
+            state.sprites[1].animation.set_state(2, frame);
         } else if x_distance < 0 {
-            enemy_pos_x -= 1
+            enemy_pos_x -= 1;
+            state.sprites[1].animation.set_state(1, frame);
         
     } else {
+        state.sprites[1].animation.set_state(0, frame);
         if y_distance > 0 {
             enemy_pos_y += 1
         } else if y_distance < 0 {
@@ -486,14 +419,8 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
             enemy_pos_y += 1;
         }
     }
-
     state.sprites[1].position.0 = enemy_pos_x;
     state.sprites[1].position.1 = enemy_pos_y;
-
-
-
-
-
 }
 
 
