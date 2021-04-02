@@ -4,21 +4,17 @@ use crate::types::Rect;
 
 pub fn player_contacts(sprites: &Vec<Sprite>) -> bool {
     // collide player against objects
-    for i in 4..sprites.len() {
+    for i in 1..sprites.len() {
         for hit_box in &sprites[i].hit_boxes {
             if rect_displacement(sprites[0].hit_boxes[0].clone(), hit_box.clone())
-                && sprites[i].is_obstacle
-            {
+                && sprites[i].is_obstacle{
                 return true;
-            } else if rect_displacement(sprites[0].hit_boxes[1].clone(), hit_box.clone())
-                && sprites[i].is_obstacle
-            {
-                return true;
-            }
+            } 
         }
     }
     return false;
 }
+
 
 pub fn laser_contacts(sprites: &mut Vec<Sprite>, frame: usize) {
     let mut contacts: Vec<(usize, usize)> = vec![];

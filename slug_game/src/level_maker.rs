@@ -83,6 +83,15 @@ pub fn make_player() -> Sprite {
             },
         ]),
         Vec2i(10, 50),
+        vec![Rect {
+            x: 22,
+            y: 58,
+            w: 20,
+            h: 28,
+        }],
+        false,
+        false,
+        false,
     )
 }
 
@@ -163,6 +172,15 @@ pub fn make_enemy() -> Sprite {
             },
         ]),
         Vec2i(100, 100),
+        vec![Rect {
+            x: 112,
+            y: 108,
+            w: 20,
+            h: 28,
+        }],
+        false,
+        false,
+        false,
     )
 }
 

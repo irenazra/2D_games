@@ -8,15 +8,23 @@ pub struct Sprite {
     pub animation: Animation,
     pub position: Vec2i,
     pub frame_pos: usize,
+    pub hit_boxes: Vec<Rect>,
+    pub exploded: bool,
+    pub is_explodable: bool,
+    pub is_obstacle: bool,
 }
 
 impl Sprite {
-    pub fn new(image: &Rc<Texture>, animation: Animation, position: Vec2i) -> Self {
+    pub fn new(image: &Rc<Texture>, animation: Animation, position: Vec2i,hit_b: Vec<Rect>, exp: bool, exp_able:bool, obs:bool ) -> Self {
         Self {
             image: Rc::clone(image),
             animation,
             position,
             frame_pos: 0,
+            hit_boxes: hit_b,
+            exploded:exp,
+            is_explodable: exp_able,
+            is_obstacle: obs,
         }
     }
 

@@ -39,6 +39,10 @@ use tile::*;
 mod level_maker;
 use level_maker::*;
 
+
+mod collision;
+use collision::*;
+
 use crate::types::{Rect, Vec2i};
 
 
@@ -215,7 +219,7 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         state.sprites[0].position.0 += 2;
     } 
     
-    if x2 > 238 {
+    if x2 > (WIDTH - 2) as i32 {
         state.sprites[0].position.0 -= 2;
     } 
 
@@ -223,7 +227,7 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         state.sprites[0].position.1 += 2;
     }
 
-    if y2 > 238 {
+    if y2 > (HEIGHT - 2) as i32 {
         state.sprites[0].position.1 -= 2;
     } 
     
@@ -352,24 +356,31 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     if x_distance > 0 {
             enemy_pos_x += 1;
             state.sprites[1].animation.set_state(2, frame);
-        } else if x_distance < 0 {
+    } else if x_distance < 0 {
             enemy_pos_x -= 1;
             state.sprites[1].animation.set_state(1, frame);
         
     } else {
         state.sprites[1].animation.set_state(0, frame);
-        if y_distance > 0 {
-            enemy_pos_y += 1
-        } else if y_distance < 0 {
-            enemy_pos_y -= 1
-        }
     }
+
+
+    if y_distance > 0 {
+        enemy_pos_y += 1;
+        //state.sprites[1].animation.set_state(0, frame);
+    } else if y_distance < 0 {
+            enemy_pos_y -= 1;
+            //state.sprites[1].animation.set_state(0, frame);
+        
+    } 
+
+
 
     if enemy_pos_x < 1 {
         enemy_pos_x += 1;
     } 
     
-    if enemy_pos_x + 48 > 239 {
+    if enemy_pos_x + 48 > (WIDTH - 2) as i32 {
         enemy_pos_x -= 1;
     } 
 
@@ -377,7 +388,7 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         enemy_pos_y += 1;
     }
 
-    if enemy_pos_y + 48 > 239 {
+    if enemy_pos_y + 48 > (HEIGHT - 2) as i32 {
         enemy_pos_y -= 1;
     } 
 
@@ -392,6 +403,8 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     let c_tile_bl = state.tilemap.tile_id_at(bl);
     let c_tile_br = state.tilemap.tile_id_at(br);
 
+
+    //WALL CHECKS FOR THE ENEMY
       //top left collides with a wall
     if c_tile_tl.0 == 0 {
         //bottom left collides with a wall
@@ -400,7 +413,7 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         } else {
             enemy_pos_y += 1;
         }
-    } 
+    }
 
     if c_tile_bl.0 == 0 {
         if c_tile_br.0 == 0 {
@@ -419,8 +432,49 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
             enemy_pos_y += 1;
         }
     }
+
+
+    //FIRE CHECKS FOR THE ENEMY
+      //top left collides with a wall
+      if c_tile_tl.0 == 3 {
+        //bottom left collides with a wall
+        if (c_tile_bl.0 == 3) {
+            enemy_pos_x += 1;
+        } else {
+            enemy_pos_y += 1;
+        }
+    } 
+
+    if c_tile_bl.0 == 3 {
+        if c_tile_br.0 == 3 {
+            enemy_pos_y += - 1;
+        }  else {
+            enemy_pos_x += 1;
+        }
+    }
+
+    //top right collides with a wall
+    if c_tile_tr.0 == 3 {
+        //bottom right collides with a wall
+        if (c_tile_br.0 == 3) {
+            enemy_pos_x -= 1;
+        } else {
+            enemy_pos_y += 1;
+        }
+    }
+
+
     state.sprites[1].position.0 = enemy_pos_x;
     state.sprites[1].position.1 = enemy_pos_y;
+
+    if player_contacts(&state.sprites) {
+        //thread::sleep(time::Duration::from_millis(500));
+        println!("{}", "YOU DIED!");
+        
+    }
+
+
+    
 }
 
 
