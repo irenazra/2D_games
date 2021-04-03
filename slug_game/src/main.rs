@@ -7,7 +7,7 @@ use winit::event::{Event, VirtualKeyCode};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
-use rand::{thread_rng, Rng};
+use std::{thread, time};
 use std::collections::HashSet;
 
 // Whoa what's this?
@@ -48,13 +48,15 @@ use crate::types::{Rect, Vec2i};
 
 // Now this main module is just for the run-loop and rules processing.
 struct GameState {
-
-    
     // What data do we need for this game?  Wall positions?
+    textures: Vec<Rc<Texture>>,
     sprites: Vec<Sprite>,
     tilemap:Tilemap,
     covered_tiles: usize,
+    level: u16,
+    current_tex: usize,
 }
+
 // seconds per frame
 const DT: f64 = 1.0 / 60.0;
 
@@ -82,18 +84,6 @@ fn main() {
         Pixels::new(WIDTH as u32, HEIGHT as u32, surface_texture).unwrap()
     };
 
-
-    let mut tiles = Rc::new(Texture::with_file(Path::new("src/pixel_art/slug_tiles.png")));
-
-    //Create the tiles
-    let first_tile = tile::Tile { solid: true };
-    let second_tile = tile::Tile { solid: true };
-    let third_tile = tile::Tile { solid: true };
-    let fourth_tile = tile::Tile { solid: true };
-  
-
-    let tile_set = Rc::new(tile::Tileset{tiles : vec![first_tile, second_tile, third_tile,fourth_tile], texture:tiles});
-
     let mut first_ID = tile::TileID(0);
     let mut second_ID = tile::TileID(1);
     let mut third_ID = tile::TileID(2);
@@ -113,23 +103,14 @@ fn main() {
     //     }
     // }
 
-    let mut map = vec![1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,];
-
-    let mut tile_map = tile::Tilemap::new(
-        Vec2i(0,0),
-        ((10) ,(10)),
-        &tile_set,
-        map,
-    );
-
-
-
-
     let mut state = GameState {
         // initial game state...
+        textures: make_menus(),
         sprites: make_core(),
-        tilemap: tile_map,
+        tilemap: reset_tiles(),
         covered_tiles: 0,
+        level: 0,
+        current_tex: 0,
     };
 
     // How many frames have we simulated?
@@ -148,9 +129,35 @@ fn main() {
             let mut screen = Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, tile_map_position);
             screen.clear(Rgba(0, 0, 0, 0));
 
-            
-
-            draw_game(&mut state, &mut screen,frame_count);
+            if state.level == 0 { // HOME SCREEN
+                update_menu(&mut state, &input);
+                screen.bitblt(
+                    &state.textures[state.current_tex],
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        w: 480,
+                        h: 480,
+                    },
+                    Vec2i(0, 0),
+                );
+            } else if state.level == 2 { // GAME OVER
+                screen.bitblt(
+                    &state.textures[5],
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        w: 480,
+                        h: 480,
+                    },
+                    Vec2i(0, 0),
+                );
+                if input.key_held(VirtualKeyCode::Return){
+                    state.level = 0;
+                }
+            } else {
+                draw_game(&mut state, &mut screen,frame_count);
+            }
 
             // Flip buffers
             if pixels.render().is_err() {
@@ -178,11 +185,11 @@ fn main() {
         while available_time >= DT {
             // Eat up one frame worth of time
             available_time -= DT;
-
-            update_game(&mut state, &input, frame_count);
-
-            // Increment the frame counter
-            frame_count += 1;
+            if state.level == 1{
+                update_game(&mut state, &input, frame_count);
+                // Increment the frame counter
+                frame_count += 1;
+            }
         }
         // Request redraw
         window.request_redraw();
@@ -248,24 +255,30 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     collided_tiles.insert(colliding_tile_br.0);
 
     if collided_tiles.contains(&3) {
-        println!("{}", "You died! Got too close to fire!");
+        thread::sleep(time::Duration::from_millis(500));
+        state.level = 2
+        // TODO: SAVE THE GAME HERE
     }
 
     //top left collides with a wall
     if colliding_tile_tl.0 == 0 {
         //bottom left collides with a wall
-        if (colliding_tile_bl.0 == 0) {
+        if colliding_tile_bl.0 == 0 {
             state.sprites[0].position.0 += 2;
+            shift_hitboxes(Vec2i(2,0), &mut state.sprites[0]);
         } else {
             state.sprites[0].position.1 += 2;
+            shift_hitboxes(Vec2i(0,2), &mut state.sprites[0]);
         }
     } 
 
     if colliding_tile_bl.0 == 0 {
         if colliding_tile_br.0 == 0 {
             state.sprites[0].position.1 += - 2;
+            shift_hitboxes(Vec2i(0,-2), &mut state.sprites[0]);
         }  else {
             state.sprites[0].position.0 += 2;
+            shift_hitboxes(Vec2i(2,0), &mut state.sprites[0]);
         }
     }
 
@@ -273,10 +286,12 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     //top right collides with a wall
     if colliding_tile_tr.0 == 0 {
         //bottom right collides with a wall
-        if (colliding_tile_br.0 == 0) {
+        if colliding_tile_br.0 == 0 {
             state.sprites[0].position.0 -= 2;
+            shift_hitboxes(Vec2i(-2,0), &mut state.sprites[0]);
         } else {
             state.sprites[0].position.1 += 2;
+            shift_hitboxes(Vec2i(0,2), &mut state.sprites[0]);
         }
     }
 
@@ -311,25 +326,31 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     if input.key_held(VirtualKeyCode::Right) {
         state.sprites[0].position.0 += 2;
         state.sprites[0].animation.set_state(2, frame);
+        shift_hitboxes(Vec2i(2,0), &mut state.sprites[0]);
     }
     if input.key_held(VirtualKeyCode::Left) {
         state.sprites[0].position.0 -= 2;
         state.sprites[0].animation.set_state(1, frame);
+        shift_hitboxes(Vec2i(-2,0), &mut state.sprites[0]);
     }
 
     // Diagonal situations
     if input.key_held(VirtualKeyCode::Up) && (input.key_held(VirtualKeyCode::Left) || input.key_held(VirtualKeyCode::Right)){
         state.sprites[0].position.1 -= 2;
+        shift_hitboxes(Vec2i(0,-2), &mut state.sprites[0]);
     } else if input.key_held(VirtualKeyCode::Up){ // Not diagonal
         state.sprites[0].position.1 -= 2;
         state.sprites[0].animation.set_state(0, frame);
+        shift_hitboxes(Vec2i(0,-2), &mut state.sprites[0]);
     }
     // Diagonal situations
     if input.key_held(VirtualKeyCode::Down) && (input.key_held(VirtualKeyCode::Left) || input.key_held(VirtualKeyCode::Right)){
         state.sprites[0].position.1 += 2;
+        shift_hitboxes(Vec2i(0,2), &mut state.sprites[0]);
     } else if input.key_held(VirtualKeyCode::Down){ // Not diagonal
         state.sprites[0].position.1 += 2;
         state.sprites[0].animation.set_state(0, frame);
+        shift_hitboxes(Vec2i(0,2), &mut state.sprites[0]);
     }
 
     // Go back to back and forth motion
@@ -356,10 +377,11 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     if x_distance > 0 {
             enemy_pos_x += 1;
             state.sprites[1].animation.set_state(2, frame);
+            shift_hitboxes(Vec2i(1,0), &mut state.sprites[1]);
     } else if x_distance < 0 {
             enemy_pos_x -= 1;
             state.sprites[1].animation.set_state(1, frame);
-        
+            shift_hitboxes(Vec2i(-1,0), &mut state.sprites[1]);
     } else {
         state.sprites[1].animation.set_state(0, frame);
     }
@@ -368,28 +390,33 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     if y_distance > 0 {
         enemy_pos_y += 1;
         //state.sprites[1].animation.set_state(0, frame);
+        shift_hitboxes(Vec2i(0,1), &mut state.sprites[1]);
     } else if y_distance < 0 {
-            enemy_pos_y -= 1;
-            //state.sprites[1].animation.set_state(0, frame);
-        
+        enemy_pos_y -= 1;
+        //state.sprites[1].animation.set_state(0, frame);
+        shift_hitboxes(Vec2i(0,-1), &mut state.sprites[1]);
     } 
 
 
 
     if enemy_pos_x < 1 {
         enemy_pos_x += 1;
+        shift_hitboxes(Vec2i(1,0), &mut state.sprites[1]);
     } 
     
     if enemy_pos_x + 48 > (WIDTH - 2) as i32 {
         enemy_pos_x -= 1;
+        shift_hitboxes(Vec2i(-1,0), &mut state.sprites[1]);
     } 
 
     if enemy_pos_y < 1 {
         enemy_pos_y += 1;
+        shift_hitboxes(Vec2i(0,1), &mut state.sprites[1]);
     }
 
     if enemy_pos_y + 48 > (HEIGHT - 2) as i32 {
         enemy_pos_y -= 1;
+        shift_hitboxes(Vec2i(0,-1), &mut state.sprites[1]);
     } 
 
 
@@ -408,28 +435,34 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
       //top left collides with a wall
     if c_tile_tl.0 == 0 {
         //bottom left collides with a wall
-        if (c_tile_bl.0 == 0) {
+        if c_tile_bl.0 == 0 {
             enemy_pos_x += 1;
+            shift_hitboxes(Vec2i(1,0), &mut state.sprites[1]);
         } else {
             enemy_pos_y += 1;
+            shift_hitboxes(Vec2i(0,1), &mut state.sprites[1]);
         }
     }
 
     if c_tile_bl.0 == 0 {
         if c_tile_br.0 == 0 {
             enemy_pos_y += - 1;
+            shift_hitboxes(Vec2i(0,-1), &mut state.sprites[1]);
         }  else {
             enemy_pos_x += 1;
+            shift_hitboxes(Vec2i(1,0), &mut state.sprites[1]);
         }
     }
 
     //top right collides with a wall
     if c_tile_tr.0 == 0 {
         //bottom right collides with a wall
-        if (c_tile_br.0 == 0) {
+        if c_tile_br.0 == 0 {
             enemy_pos_x -= 1;
+            shift_hitboxes(Vec2i(-1,0), &mut state.sprites[1]);
         } else {
             enemy_pos_y += 1;
+            shift_hitboxes(Vec2i(0,1), &mut state.sprites[1]);
         }
     }
 
@@ -438,28 +471,35 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
       //top left collides with a wall
       if c_tile_tl.0 == 3 {
         //bottom left collides with a wall
-        if (c_tile_bl.0 == 3) {
+        if c_tile_bl.0 == 3 {
             enemy_pos_x += 1;
+            shift_hitboxes(Vec2i(1,0), &mut state.sprites[1]);
         } else {
             enemy_pos_y += 1;
+            shift_hitboxes(Vec2i(0,1), &mut state.sprites[1]);
         }
     } 
 
     if c_tile_bl.0 == 3 {
         if c_tile_br.0 == 3 {
             enemy_pos_y += - 1;
+            shift_hitboxes(Vec2i(0,-1), &mut state.sprites[1]);
+            
         }  else {
             enemy_pos_x += 1;
+            shift_hitboxes(Vec2i(1,0), &mut state.sprites[1]);
         }
     }
 
     //top right collides with a wall
     if c_tile_tr.0 == 3 {
         //bottom right collides with a wall
-        if (c_tile_br.0 == 3) {
+        if c_tile_br.0 == 3 {
             enemy_pos_x -= 1;
+            shift_hitboxes(Vec2i(-1,0), &mut state.sprites[1]);
         } else {
             enemy_pos_y += 1;
+            shift_hitboxes(Vec2i(0,1), &mut state.sprites[1]);
         }
     }
 
@@ -468,9 +508,9 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
     state.sprites[1].position.1 = enemy_pos_y;
 
     if player_contacts(&state.sprites) {
-        //thread::sleep(time::Duration::from_millis(500));
-        println!("{}", "YOU DIED!");
-        
+        thread::sleep(time::Duration::from_millis(500));
+        state.level = 2
+        // TODO: SAVE THE GAME HERE
     }
 
 
@@ -479,3 +519,42 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
 
 
 
+
+
+// Function that takes care of moving around in the menu
+fn update_menu(state: &mut GameState, input: &WinitInputHelper) {
+    if input.key_pressed(VirtualKeyCode::Up) && state.current_tex != 3 {
+        if state.current_tex != 0 {
+            state.current_tex -= 1;
+            state.current_tex %= 3;
+        } else {
+            state.current_tex = 2;
+        }
+    }
+    if input.key_pressed(VirtualKeyCode::Down) && state.current_tex != 3 {
+        state.current_tex += 1;
+        state.current_tex %= 3;
+    }
+    if input.key_pressed(VirtualKeyCode::Return) {
+        if state.current_tex == 0 {
+            state.sprites = make_core();
+            state.covered_tiles = 0;
+            state.tilemap = reset_tiles();
+            state.level = 1;
+        } else if state.current_tex == 1 {
+            //TODO: LOAD THE TILEMAP HERE AND SET THE STATE ACCORDINGLY
+            // USE SOMETHING LIKE: load_game();
+        } else if state.current_tex == 2 {
+            state.current_tex = 3;
+        } else if state.current_tex == 3 {
+            state.current_tex = 0;
+        }
+    }
+}
+
+fn shift_hitboxes( Vec2i(x,y): Vec2i, sprite:  &mut Sprite){
+    for i in 0..sprite.hit_boxes.len(){
+        sprite.hit_boxes[i].x += x;
+        sprite.hit_boxes[i].y += y;
+    }
+}
