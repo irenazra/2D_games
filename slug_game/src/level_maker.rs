@@ -172,10 +172,10 @@ pub fn make_enemy() -> Sprite {
                 repeat: true,
             },
         ]),
-        Vec2i(100, 100),
+        Vec2i(100, 160),
         vec![Rect {
             x: 112,
-            y: 108,
+            y: 168,
             w: 20,
             h: 28,
         }],

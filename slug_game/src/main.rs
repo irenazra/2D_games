@@ -1,6 +1,7 @@
 use pixels::{Pixels, SurfaceTexture};
 use std::path::Path;
 use std::rc::Rc;
+use std::concat;
 use std::time::Instant;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, VirtualKeyCode};
@@ -9,6 +10,14 @@ use winit::window::WindowBuilder;
 use winit_input_helper::WinitInputHelper;
 use std::{thread, time};
 use std::collections::HashSet;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+use std::io::Write;
+use std::io::Read;
+use std::fs;
+use std::str::FromStr;
+
+
 
 // Whoa what's this?
 // Mod without brackets looks for a nearby file.
@@ -256,8 +265,8 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
 
     if collided_tiles.contains(&3) {
         thread::sleep(time::Duration::from_millis(500));
-        state.level = 2
-        // TODO: SAVE THE GAME HERE
+        state.level = 2;
+        save_game(&mut state.tilemap);
     }
 
     //top left collides with a wall
@@ -509,8 +518,9 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
 
     if player_contacts(&state.sprites) {
         thread::sleep(time::Duration::from_millis(500));
-        state.level = 2
-        // TODO: SAVE THE GAME HERE
+        state.level = 2;
+        save_game(&mut state.tilemap);
+
     }
 
 
@@ -544,6 +554,11 @@ fn update_menu(state: &mut GameState, input: &WinitInputHelper) {
         } else if state.current_tex == 1 {
             //TODO: LOAD THE TILEMAP HERE AND SET THE STATE ACCORDINGLY
             // USE SOMETHING LIKE: load_game();
+            state.sprites = make_core();
+            state.covered_tiles = 0;
+            load_game(&mut state.tilemap);
+            state.level = 1;
+            
         } else if state.current_tex == 2 {
             state.current_tex = 3;
         } else if state.current_tex == 3 {
@@ -557,4 +572,32 @@ fn shift_hitboxes( Vec2i(x,y): Vec2i, sprite:  &mut Sprite){
         sprite.hit_boxes[i].x += x;
         sprite.hit_boxes[i].y += y;
     }
+}
+
+fn save_game(tile_map : &mut Tilemap) {
+    let mut data: String = " ".to_string();
+
+    for x in tile_map.map.iter_mut() {
+        data.push_str((x.0).to_string().as_str());
+        data.push_str(" ");
+    }
+
+    fs::write("save_file.txt", data);
+}
+
+fn load_game(tile_map : &mut Tilemap) {
+    let reader = BufReader::new(File::open("save_file.txt").expect("Cannot open file.txt"));
+
+    let mut counter = 0;
+
+    for line in reader.lines() {
+        for id in line.unwrap().split_whitespace() {
+            let number: u32 = FromStr::from_str(id).unwrap();
+            tile_map.map[counter].0 = number as usize;
+            
+        }
+        counter = counter + 1;
+    }
+
+
 }
