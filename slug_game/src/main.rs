@@ -139,6 +139,7 @@ fn main() {
             screen.clear(Rgba(0, 0, 0, 0));
 
             if state.level == 0 { // HOME SCREEN
+                println!("{}", "Entered level 0");
                 update_menu(&mut state, &input);
                 screen.bitblt(
                     &state.textures[state.current_tex],
@@ -151,6 +152,7 @@ fn main() {
                     Vec2i(0, 0),
                 );
             } else if state.level == 2 { // GAME OVER
+                println!("{}", "Entered level 2");
                 screen.bitblt(
                     &state.textures[5],
                     Rect {
@@ -164,6 +166,22 @@ fn main() {
                 if input.key_held(VirtualKeyCode::Return){
                     state.level = 0;
                 }
+            } else if state.level == 3 { //WIN
+                println!("{}", "Entered level 3");
+                screen.bitblt(
+                    &state.textures[4],
+                    Rect {
+                        x: 0,
+                        y: 0,
+                        w: 480,
+                        h: 480,
+                    },
+                    Vec2i(0, 0),
+                );
+                if input.key_held(VirtualKeyCode::Return){
+                    state.level = 0;
+                }
+
             } else {
                 draw_game(&mut state, &mut screen,frame_count);
             }
@@ -523,6 +541,11 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
 
     }
 
+    if all_slime(&mut state.tilemap) > 30 {
+        state.level = 3;
+    }
+
+
 
     
 }
@@ -599,5 +622,19 @@ fn load_game(tile_map : &mut Tilemap) {
         counter = counter + 1;
     }
 
+}
+
+//Determine player's winning conditions
+fn all_slime(tile_map : &mut Tilemap) -> usize {
+    let mut total = 0;
+    for t in tile_map.map.iter_mut() {
+        if (t.0 == 2) {
+            total = total + 1;
+        }
+    }
+
+    return total;
+
+  
 
 }
