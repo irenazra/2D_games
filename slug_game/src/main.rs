@@ -74,7 +74,6 @@ const HEIGHT: usize = 480;
 const DEPTH: usize = 4;
 
 fn main() {
-    println!("{}","Entering main");
     let event_loop = EventLoop::new();
     let mut input = WinitInputHelper::new();
     let window = {
@@ -139,7 +138,6 @@ fn main() {
             screen.clear(Rgba(0, 0, 0, 0));
 
             if state.level == 0 { // HOME SCREEN
-                println!("{}", "Entered level 0");
                 update_menu(&mut state, &input);
                 screen.bitblt(
                     &state.textures[state.current_tex],
@@ -152,7 +150,6 @@ fn main() {
                     Vec2i(0, 0),
                 );
             } else if state.level == 2 { // GAME OVER
-                println!("{}", "Entered level 2");
                 screen.bitblt(
                     &state.textures[5],
                     Rect {
@@ -167,7 +164,6 @@ fn main() {
                     state.level = 0;
                 }
             } else if state.level == 3 { //WIN
-                println!("{}", "Entered level 3");
                 screen.bitblt(
                     &state.textures[4],
                     Rect {
