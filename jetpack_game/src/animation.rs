@@ -22,8 +22,10 @@ pub trait StartAnim {
 
 impl<'fb> StartAnim for Animation {
     fn set_state(&mut self, state: usize, current_frame: usize) {
-        self.index = state;
-        self.states[state].start_time = current_frame;
+        if self.index != state {
+            self.index = state;
+            self.states[state].start_time = current_frame;
+        }
     }
 }
 

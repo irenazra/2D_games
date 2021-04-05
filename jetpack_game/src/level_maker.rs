@@ -64,7 +64,11 @@ pub fn make_break_asteroid(position: Vec2i) -> Sprite {
                     y: 0,
                     w: 32,
                     h: 32,
-                }],
+                }, Rect {
+                    x: 64,
+                    y: 0,
+                    w: 32,
+                    h: 32,}],
                 current_index: 0,
                 start_time: 0,
                 repeat: false,

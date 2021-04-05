@@ -14,7 +14,7 @@ pub struct Tileset {
     // Tile size is a constant, so we can find the tile in the texture using math
     // (assuming the texture is a grid of tiles).
     pub tiles: Vec<Tile>,
-    texture: Rc<Texture>,
+    pub texture: Rc<Texture>,
     // In this design, each tileset is a distinct image.
     // Maybe not always the best choice if there aren't many tiles in a tileset!
 }
@@ -68,7 +68,7 @@ pub struct Tilemap {
     /// Which tileset is used for this tilemap
     tileset: Rc<Tileset>,
     /// A row-major grid of tile IDs in tileset
-    map: Vec<TileID>,
+    pub map: Vec<TileID>,
 }
 
 impl Tilemap {
@@ -91,30 +91,51 @@ impl Tilemap {
         }
     }
 
-    // pub fn tile_id_at(&self, Vec2i(x, y): Vec2i) -> TileID {
-    //     // Translate into map coordinates
-    //     let x = (x - self.position.0) / TILE_SZ as i32;
-    //     let y = (y - self.position.1) / TILE_SZ as i32;
-    //     assert!(
-    //         x >= 0 && x < self.dims.0 as i32,
-    //         "Tile X coordinate {} out of bounds {}",
-    //         x,
-    //         self.dims.0
-    //     );
-    //     assert!(
-    //         y >= 0 && y < self.dims.1 as i32,
-    //         "Tile Y coordinate {} out of bounds {}",
-    //         y,
-    //         self.dims.1
-    //     );
-    //     self.map[y as usize * self.dims.0 + x as usize]
-    // }
-    // pub fn size(&self) -> (usize, usize) {
-    //     self.dims
-    // }
-    // pub fn tile_at(&self, posn: Vec2i) -> Tile {
-    //     self.tileset[self.tile_id_at(posn)]
-    // }
+    pub fn tile_id_at(&self, Vec2i(x, y): Vec2i) -> TileID {
+        // Translate into map coordinates
+        let x = (x - self.position.0) / TILE_SZ as i32;
+        let y = (y - self.position.1) / TILE_SZ as i32;
+        assert!(
+            x >= 0 && x < self.dims.0 as i32,
+            "Tile X coordinate {} out of bounds {}",
+            x,
+            self.dims.0
+        );
+        assert!(
+            y >= 0 && y < self.dims.1 as i32,
+            "Tile Y coordinate {} out of bounds {}",
+            y,
+            self.dims.1
+        );
+        self.map[y as usize * self.dims.0 + x as usize]
+    }
+
+    pub fn tile_index_at(&self, Vec2i(x, y): Vec2i) -> usize {
+        // Translate into map coordinates
+        let x = (x - self.position.0) / TILE_SZ as i32;
+        let y = (y - self.position.1) / TILE_SZ as i32;
+        assert!(
+            x >= 0 && x < self.dims.0 as i32,
+            "Tile X coordinate {} out of bounds {}",
+            x,
+            self.dims.0
+        );
+        assert!(
+            y >= 0 && y < self.dims.1 as i32,
+            "Tile Y coordinate {} out of bounds {}",
+            y,
+            self.dims.1
+        );
+
+        return y as usize * self.dims.0 + x as usize;
+    }
+
+    pub fn size(&self) -> (usize, usize) {
+        self.dims
+    }
+    pub fn tile_at(&self, posn: Vec2i) -> Tile {
+        self.tileset[self.tile_id_at(posn)]
+    }
 
     pub fn draw(&self, screen: &mut Screen) {
         let Rect {
