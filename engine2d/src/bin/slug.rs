@@ -511,7 +511,7 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
 
     }
 
-    if all_slime(&mut state.tilemap) > 30 {
+    if all_slime(&mut state.tilemap) >= 92 {
         state.level = 3;
     }
 
